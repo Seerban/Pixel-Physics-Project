@@ -1,2 +1,3 @@
-# Pixel-Physics-Project
-Simple project to test pixel based physics and optimizations
+# Pixel Physics Project
+Simple project to practice my C++
+SFML Dependency
