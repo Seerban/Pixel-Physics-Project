@@ -3,6 +3,8 @@
 #include <iostream> // debugging
 #include "Pixel.h"
 #include "Dust.h"
+#include "Liquid.h"
+#include "Gas.h"
 
 const int WIDTH = 40;
 const int HEIGHT = 40;
@@ -40,6 +42,8 @@ int main() {
     setPixel(30, 10, new Dust(sf::Color::Magenta) );
     setPixel(30, 8, new Dust(sf::Color::Cyan) );
     setPixel(30, 7, new Dust(sf::Color::Yellow) );
+    setPixel(35, 3, new Liquid(sf::Color(35, 75, 255, 255)));
+    setPixel(25, 20, new Gas(sf::Color(175, 175, 175, 255)));
     Pixel::switch_pixel(30, 10, 30, 11);
 
     while (window.isOpen()) {

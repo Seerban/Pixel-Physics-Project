@@ -2,11 +2,11 @@
 #include "Pixel.h"
 #pragma once
 
-class Dust : public Pixel {
+class Liquid : public Pixel {
 
 public:
-    Dust() : Pixel() {}
-    Dust(sf::Color col) : Pixel(col) {}
+    Liquid() : Pixel() {}
+    Liquid(sf::Color col) : Pixel(col) {}
 
     void process(int x, int y) override {
         //check bleow
@@ -23,6 +23,16 @@ public:
         else {
             if( is_empty(x-1, y+1) ) { Pixel::switch_pixel(x, y, x-1, y+1); return; }
             if( is_empty(x+1, y+1) ) { Pixel::switch_pixel(x, y, x+1, y+1); return; }
+        }
+        // go horizontally 
+        if ( random() > 0.5 ) // choose to go left or right first
+        {
+            if( is_empty(x+1, y) ) { Pixel::switch_pixel(x, y, x+1, y); return; }
+            if( is_empty(x-1, y) ) { Pixel::switch_pixel(x, y, x-1, y); return; }
+        }
+        else {
+            if( is_empty(x-1, y) ) { Pixel::switch_pixel(x, y, x-1, y); return; }
+            if( is_empty(x+1, y) ) { Pixel::switch_pixel(x, y, x+1, y); return; }
         }
     }
 };

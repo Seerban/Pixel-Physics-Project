@@ -7,6 +7,7 @@
 
 class Pixel {
     sf::Color col;
+    bool processed = false;
 public:
     static std::vector<std::vector< Pixel* >>  grid;
     static sf::Image image;
@@ -20,7 +21,13 @@ public:
         { return this->col; }
     void setCol(sf::Color color)
         { this->col = color; }
-    // Friend
+    bool getProcessed() const {
+        return this->processed;
+    }
+    void setProcessed(bool b) {
+        this->processed = b;
+    }
+        // Friend
     friend std::ostream& operator<<(std::ostream& o, Pixel& p) {
         o << static_cast<int>(p.getCol().r)
             << static_cast<int>(p.getCol().g)
@@ -38,13 +45,19 @@ public:
         grid[y2][x2]->render(x2, y2);
     }
     static bool is_empty(int x, int y) {
+        if( y<0 || y>=grid.size() || x<0 || x>=grid.size() ) return false;
         return grid[y][x]->getCol() == sf::Color::Black;
     }
     static void processPixels() {
         for(int i = grid.size()-1; i >= 0; --i)
             for(int j = 0; j < grid.size(); ++j) {
+                if( grid[i][j]->getProcessed() ) continue;
+                grid[i][j]->setProcessed(true);
                 grid[i][j]->process(j, i);
         }
+        for(int i = grid.size()-1; i >= 0; --i)
+            for(int j = 0; j < grid.size(); ++j)
+                grid[i][j]->setProcessed(false);
     }
     // Universal / Utility
     void render(int x, int y) {
