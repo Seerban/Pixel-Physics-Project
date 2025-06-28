@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include <iostream>
+#include <iostream> // debugging
 #include "Pixel.h"
 #include "Dust.h"
 
@@ -14,17 +14,10 @@ sf::Image Pixel::image;
 sf::Texture Pixel::texture;
 sf::Sprite Pixel::sprite;
 
+// temporary until pixel service
 void setPixel(int x, int y, Pixel* p) {
    Pixel::grid[y][x] = p;
    p->render(x, y);
-}
-
-void processPixels() {
-    for(int i = HEIGHT-1; i >= 0; --i)
-        for(int j = 0; j < WIDTH; ++j) {
-            Pixel::grid[i][j]->process(j, i);
-            if( Pixel::grid[i][j]->getCol() == sf::Color::Magenta ) std::cout<<i<<' '<<j<<std::endl;
-       }
 }
 
 int main() {
@@ -45,6 +38,8 @@ int main() {
     setPixel(10, 20, new Pixel(sf::Color::Blue) );
     setPixel(20, 10, new Pixel(sf::Color::Green) );
     setPixel(30, 10, new Dust(sf::Color::Magenta) );
+    setPixel(30, 8, new Dust(sf::Color::Cyan) );
+    setPixel(30, 7, new Dust(sf::Color::Yellow) );
     Pixel::switch_pixel(30, 10, 30, 11);
 
     while (window.isOpen()) {
@@ -54,7 +49,7 @@ int main() {
                 window.close();
         }
 
-        processPixels();
+        Pixel::processPixels();
         Pixel::texture.update(Pixel::image);
 
         window.clear();
