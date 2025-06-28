@@ -6,7 +6,7 @@
 class Pixel {
     sf::Color col;
 public:
-    static std::vector<std::vector<Pixel>>  grid;
+    static std::vector<std::vector< Pixel* >>  grid;
     static sf::Image image;
     static sf::Texture texture;
     static sf::Sprite sprite;
@@ -14,7 +14,7 @@ public:
     Pixel() : col(sf::Color::Black) {}
     Pixel(sf::Color col) : col(col) {}
 
-    void setGrid(std::vector<std::vector<Pixel>> g) { this->grid = g; }
+    void setGrid(std::vector<std::vector< Pixel* >> g) { this->grid = g; }
     sf::Color getCol() const { return this->col; }
     void setCol(sf::Color color) { this->col = color; }
 
@@ -29,12 +29,10 @@ public:
     void render(int x, int y) {
         image.setPixel(x, y, getCol() );
     }
-
-    void switch_pixel(int x1, int y1, int x2, int y2) {
+    static void switch_pixel(int x1, int y1, int x2, int y2) {
         std::swap(grid[y1][x1], grid[y2][x2]);
-        image.setPixel(x1, y1, grid[y1][x1].getCol() );
-        image.setPixel(x2, y2, grid[y2][x2].getCol() );
-        texture.update(image);
+        grid[y1][x1]->render(x1, y1);
+        grid[y2][x2]->render(x2, y2);
     } 
-    virtual void process() {}
+    virtual void process(int x, int y) {}
 };
