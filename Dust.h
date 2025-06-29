@@ -25,4 +25,5 @@ public:
             if( is_empty(x+1, y+1) ) { Pixel::switch_pixel(x, y, x+1, y+1); return; }
         }
     }
+    Pixel* clone() const override { return new Dust(*this); }
 };

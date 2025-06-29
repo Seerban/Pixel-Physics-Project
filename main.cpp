@@ -1,15 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream> // debugging
-#include "Pixel.h"
-#include "Dust.h"
-#include "Liquid.h"
-#include "Gas.h"
+#include "Elements.h"
 
 const int WIDTH = 40;
 const int HEIGHT = 40;
 const int SCALE = 8;
-const int FPS = 10;
+const int FPS = 16;
 
 std::vector<std::vector< Pixel* >> Pixel::grid;
 sf::Image Pixel::image;
@@ -36,15 +33,14 @@ int main() {
     Pixel::sprite.setTexture(Pixel::texture);
     Pixel::sprite.setScale(SCALE, SCALE);
 
-    setPixel(10, 10, new Pixel(sf::Color::Red) );
-    setPixel(10, 20, new Pixel(sf::Color::Blue) );
-    setPixel(20, 10, new Pixel(sf::Color::Green) );
-    setPixel(30, 10, new Dust(sf::Color::Magenta) );
-    setPixel(30, 8, new Dust(sf::Color::Cyan) );
-    setPixel(30, 7, new Dust(sf::Color::Yellow) );
-    setPixel(35, 3, new Liquid(sf::Color(35, 75, 255, 255)));
-    setPixel(25, 20, new Gas(sf::Color(175, 175, 175, 255)));
-    Pixel::switch_pixel(30, 10, 30, 11);
+    setPixel(10, 10, elements["water"]->clone() );
+    setPixel(11, 10, elements["water"]->clone() );
+    setPixel(10, 11, elements["water"]->clone() );
+    setPixel(10, 9, elements["water"]->clone() );
+    setPixel(20, 10, elements["sand"]->clone() );
+    setPixel(19, 10, elements["sand"]->clone() );
+    setPixel(21, 10, elements["sand"]->clone() );
+    setPixel(20, 7, elements["steam"]->clone() );
 
     while (window.isOpen()) {
         sf::Event event;

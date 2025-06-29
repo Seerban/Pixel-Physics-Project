@@ -27,7 +27,7 @@ public:
     void setProcessed(bool b) {
         this->processed = b;
     }
-        // Friend
+    // Friend
     friend std::ostream& operator<<(std::ostream& o, Pixel& p) {
         o << static_cast<int>(p.getCol().r)
             << static_cast<int>(p.getCol().g)
@@ -68,4 +68,5 @@ public:
     }
     // Derivable
     virtual void process(int x, int y) {}
+    virtual Pixel* clone() const { return new Pixel(*this); }
 };

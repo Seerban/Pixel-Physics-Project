@@ -35,4 +35,5 @@ public:
             if( is_empty(x+1, y) ) { Pixel::switch_pixel(x, y, x+1, y); return; }
         }
     }
+    Pixel* clone() const override { return new Liquid(*this); }
 };
