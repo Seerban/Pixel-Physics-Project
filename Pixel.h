@@ -1,11 +1,14 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream> // debug
 #include <cstdlib> // randomizer
 #include <ctime> // "random" seed
-#pragma once
+#include <utility>
+#include "Elements.h"
 
 class Pixel {
+    std::string elem;
     sf::Color col;
     bool processed = false;
 public:
@@ -13,9 +16,11 @@ public:
     static sf::Image image;
     static sf::Texture texture;
     static sf::Sprite sprite;
+
     // Constructor
-    Pixel() : col(sf::Color::Black) { set_seed(); }
-    Pixel(sf::Color col) : col(col) { set_seed(); }
+    Pixel() : col(sf::Color::Black) {}
+    Pixel(std::string elem, sf::Color col) : elem(elem), col(col) {}
+
     // Getter / Setter
     sf::Color getCol() const
         { return this->col; }
@@ -27,6 +32,10 @@ public:
     void setProcessed(bool b) {
         this->processed = b;
     }
+    std::string getElem() const {
+        return this->elem.empty()? "empty" : this->elem;
+    }
+
     // Friend
     friend std::ostream& operator<<(std::ostream& o, Pixel& p) {
         o << static_cast<int>(p.getCol().r)
@@ -35,7 +44,11 @@ public:
             << ' ';
         return o;
     }
+
     // Static
+    static bool inBounds(int x, int y) {
+        return !( x < 0 || y < 0 || x >= grid.size() || y >= grid.size() );
+    }
     static void set_seed() {
         srand(time(0));
     }
@@ -45,8 +58,12 @@ public:
         grid[y2][x2]->render(x2, y2);
     }
     static bool is_empty(int x, int y) {
-        if( y<0 || y>=grid.size() || x<0 || x>=grid.size() ) return false;
-        return grid[y][x]->getCol() == sf::Color::Black;
+        return grid[y][x]->getElem() == "empty";
+    }
+    static void setPixel(int x, int y, std::string p) {
+        delete grid[y][x];
+        Pixel::grid[y][x] = elems::elements[p]->clone();
+        Pixel::grid[y][x]->render(x,y);
     }
     static void processPixels() {
         for(int i = grid.size()-1; i >= 0; --i)
@@ -59,6 +76,7 @@ public:
             for(int j = 0; j < grid.size(); ++j)
                 grid[i][j]->setProcessed(false);
     }
+
     // Universal / Utility
     void render(int x, int y) {
         image.setPixel(x, y, getCol() );
@@ -66,7 +84,33 @@ public:
     float random() {
         return (float)(rand()) / (float)(RAND_MAX); 
     }
+    bool transform(int x, int y, std::string elem) {
+        auto it = elems::reaction[ grid[y][x]->getElem() ].find(elem);
+        std::cout<<"CHECKING " << grid[y][x]->getElem() << " WITH " << elem << std::endl;
+        if( it != elems::reaction[ grid[y][x]->getElem() ].end() ) {
+            std::cout << "TRANSFORMING " <<  grid[y][x]->getElem() << " INTO " << elem << std::endl;
+            setPixel(x, y, elems::reaction[ grid[y][x]->getElem() ][elem] );
+            return true;
+        }
+        return false;
+    }
+    void reaction(int x, int y) {
+        if( is_empty(x, y) ) return;
+        int offsets[] {1, 0,   -1, 0,   0, 1,   0, -1};
+        for(int i = 0; i < 4; i+=2) {
+            if( inBounds(x+offsets[i], y+offsets[i+1]) && !is_empty( x+offsets[i], y+offsets[i+1] ) ) {
+                //std::cout<< this->getElem() << ' ' << grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem() << std::endl;
+                bool trans = transform(x, y, grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem());
+                if( trans ) transform(x+offsets[i], y+offsets[i+1], grid[ y ][ x ]->getElem());
+            }
+        }
+    }
+    void process(int x, int y) {
+        movement(x, y);
+        reaction(x, y);
+    }
+
     // Derivable
-    virtual void process(int x, int y) {}
+    virtual void movement(int x, int y) {}
     virtual Pixel* clone() const { return new Pixel(*this); }
 };

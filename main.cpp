@@ -1,7 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream> // debugging
+#include "Pixel.h"
 #include "Elements.h"
+#include "Liquid.h"
+#include "Gas.h"
+#include "Dust.h"
 
 const int WIDTH = 40;
 const int HEIGHT = 40;
@@ -14,9 +18,8 @@ sf::Texture Pixel::texture;
 sf::Sprite Pixel::sprite;
 
 // temporary until pixel service
-void setPixel(int x, int y, Pixel* p) {
-   Pixel::grid[y][x] = p;
-   p->render(x, y);
+void setPixel(int x, int y, std::string p) {
+   Pixel::setPixel(x,y,p);
 }
 
 int main() {
@@ -33,14 +36,15 @@ int main() {
     Pixel::sprite.setTexture(Pixel::texture);
     Pixel::sprite.setScale(SCALE, SCALE);
 
-    setPixel(10, 10, elements["water"]->clone() );
-    setPixel(11, 10, elements["water"]->clone() );
-    setPixel(10, 11, elements["water"]->clone() );
-    setPixel(10, 9, elements["water"]->clone() );
-    setPixel(20, 10, elements["sand"]->clone() );
-    setPixel(19, 10, elements["sand"]->clone() );
-    setPixel(21, 10, elements["sand"]->clone() );
-    setPixel(20, 7, elements["steam"]->clone() );
+    setPixel(10, 10, "water");
+    setPixel(11, 10, "water");
+    setPixel(10, 11, "water");
+    setPixel(10, 9, "water");
+    setPixel(20, 10, "sand");
+    setPixel(19, 10, "sand");
+    setPixel(21, 10, "sand");
+    setPixel(20, 7, "steam");
+    setPixel(10, 30, "earth");
 
     while (window.isOpen()) {
         sf::Event event;
