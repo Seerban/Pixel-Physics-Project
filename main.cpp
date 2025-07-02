@@ -45,7 +45,7 @@ int main() {
     setPixel(21, 10, "sand");
     setPixel(20, 7, "steam");
     setPixel(10, 30, "earth");
-    setPixel(15, 15, "fire_source");
+    setPixel(13, 15, "fire_source");
 
     while (window.isOpen()) {
         sf::Event event;
