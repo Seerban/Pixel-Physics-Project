@@ -45,7 +45,17 @@ int main() {
     setPixel(21, 10, "sand");
     setPixel(20, 7, "steam");
     setPixel(10, 30, "earth");
-    setPixel(13, 15, "fire_source");
+    setPixel(10, 31, "earth");
+    setPixel(10, 32, "earth");
+    setPixel(10, 33, "earth");
+    setPixel(10, 34, "earth");
+    setPixel(10, 35, "earth");
+    setPixel(10, 36, "earth");
+    setPixel(10, 5, "fuel");
+    setPixel(12, 5, "fuel");
+    setPixel(11, 5, "fuel");
+    setPixel(9, 5, "fuel");
+    setPixel(15, 15, "fire_source");
 
     while (window.isOpen()) {
         sf::Event event;

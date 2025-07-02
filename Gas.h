@@ -9,25 +9,25 @@ public:
     Gas(std::string elem, sf::Color col) : Pixel(elem, col) {}
 
     void movement(int x, int y) override {
-        if( random() > 0.25 && tryMove(x, y, x, y-1)) return;
+        if( random() > 0.25 && tryMove(x, y, x, y-1, true)) return;
         else if ( random() > 0.5 ) // choose to go left or right first
         {
-            if( tryMove(x, y, x+1, y-1) ) return;
-            if( tryMove(x, y, x-1, y-1) ) return;
+            if( tryMove(x, y, x+1, y-1, true) ) return;
+            if( tryMove(x, y, x-1, y-1, true) ) return;
         }
         else {
-            if( tryMove(x, y, x-1, y-1) ) return;
-            if( tryMove(x, y, x+1, y-1) ) return;
+            if( tryMove(x, y, x-1, y-1), true) return;
+            if( tryMove(x, y, x+1, y-1), true) return;
         }
         // go horizontally 
         if ( random() > 0.5 ) // choose to go left or right first
         {
-            if( tryMove(x, y, x+1, y) ) return;
-            if( tryMove(x, y, x-1, y) ) return;
+            if( tryMove(x, y, x+1, y), true) return;
+            if( tryMove(x, y, x-1, y), true) return;
         }
         else {
-            if( tryMove(x, y, x-1, y) ) return;
-            if( tryMove(x, y, x+1, y) ) return;
+            if( tryMove(x, y, x-1, y), true) return;
+            if( tryMove(x, y, x+1, y), true) return;
         }
     }
 

@@ -14,6 +14,7 @@ std::unordered_map< std::string, Pixel* > elements = {
     // -------------------------------- solids --------------------------------
     { "earth",  new Pixel(  "earth",    sf::Color(155, 55,  35))},
     // -------------------------------- liquids --------------------------------
+    { "fuel",   new Liquid( "fuel",     sf::Color(10,  80,  120))},
     { "water",  new Liquid( "water",    sf::Color(25,  55,  235))},
     // -------------------------------- dusts --------------------------------
     { "mud",    new Dust(   "mud",      sf::Color(125, 40,  55))},
@@ -26,10 +27,27 @@ std::unordered_map< std::string, Pixel* > elements = {
     { "water_source", new Pixel("water_source", sf::Color(0, 0, 255))},
 };
 
+std::unordered_map< std::string, float> density = {
+    { "fire", -2 },
+    { "steam", -1 },
+
+    { "empty", 0 },
+    { "fuel", 0.5 },
+    { "water", 1 },
+
+    { "mud", 1.5 },
+    { "sand", 1.5 },
+
+    { "earth", 2 },
+    
+    { "fire_source", 3 },
+    { "water_source", 3 },
+};
+
 // reaction, example: ["fire"]["air"] = <air, 0.5) (50% chance to disappear)
 std::unordered_map< std::string, std::unordered_map<std::string, std::pair< std::string, float >>> reaction = {
     // -------------------------------- solids --------------------------------
-    { "earth",  {{"water",  {"mud",     1}}}        },
+    { "earth", {{"water",  {"mud",     1}}      }   },
     // -------------------------------- liquids --------------------------------
     { "water", {{"earth",  {"empty",   1}},
                 {"fire",   {"steam",    1}},    }   },
@@ -43,8 +61,8 @@ std::unordered_map< std::string, std::unordered_map<std::string, std::pair< std:
     { "empty", {{"fire_source",     {"fire",     0.75} },
                 {"water_source",    {"water",    0.75} },}  },
 
-    { "fire_source", {{"empty", {"empty", 0.005}}}   }, // bandaid fix for transformer skipping non reactive elems
-    { "water_source",{{"empty", {"empty", 0.005}}}      },
+    { "fire_source", {{"empty", {"empty", 0.0025}}}   }, // bandaid fix for transformer skipping non reactive elems
+    { "water_source",{{"empty", {"empty", 0.0025}}}      },
 };
 
 }

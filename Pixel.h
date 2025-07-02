@@ -58,10 +58,23 @@ public:
     static bool is_empty(int x, int y) {
         return grid[y][x]->getElem() == "empty";
     }
-    static bool tryMove(int x, int y, int x2, int y2) {
-        if( inBounds(x2, y2) && is_empty(x2,y2) ) {
-            switch_pixel(x, y, x2, y2);
-            return true;
+    static bool tryMove(int x, int y, int x2, int y2, bool upward = false) {
+        if( inBounds(x2, y2) ) {
+            if( is_empty(x2, y2) ) {
+                switch_pixel(x, y, x2, y2);
+                return true;
+            }
+            if( upward )
+                if( elems::density[ grid[y2][x2]->getElem() ] > elems::density[ grid[y][x]->getElem() ] and elems::density[ grid[y2][x2]->getElem() ] <= 0) {
+                    switch_pixel(x, y, x2, y2);
+                    return true;
+                }
+                else return false;
+            else
+                if( elems::density[ grid[y2][x2]->getElem() ] < elems::density[ grid[y][x]->getElem() ] ) {
+                    switch_pixel(x, y, x2, y2);
+                    return true;
+                }
             }
         return false;
     }
@@ -106,7 +119,7 @@ public:
     void reaction(int x, int y) {
         if( is_empty(x, y) ) return;
         int offsets[] {1, 0,   -1, 0,   0, 1,   0, -1};
-        for(int i = 0; i < 9; i+=2) {
+        for(int i = 0; i < 8; i+=2) {
             if( inBounds(x+offsets[i], y+offsets[i+1]) ) {
                 //std::cout<< this->getElem() << ' ' << grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem() << std::endl;
                 // auxilliary element used for a mutual eaction in case neighbor gets transformed
