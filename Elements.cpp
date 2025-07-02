@@ -23,20 +23,28 @@ std::unordered_map< std::string, Pixel* > elements = {
     { "fire",   new Gas(    "fire",     sf::Color(255, 55,  65))},
     // -------------------------------- emitters --------------------------------
     { "fire_source", new Pixel("fire_source",   sf::Color(255, 0, 0))},
+    { "water_source", new Pixel("water_source", sf::Color(0, 0, 255))},
 };
 
 // reaction, example: ["fire"]["air"] = <air, 0.5) (50% chance to disappear)
 std::unordered_map< std::string, std::unordered_map<std::string, std::pair< std::string, float >>> reaction = {
     // -------------------------------- solids --------------------------------
-    { "earth", {{"water", {"mud",   1}}}    },
+    { "earth",  {{"water",  {"mud",     1}}}        },
     // -------------------------------- liquids --------------------------------
-    { "water", {{"earth", {"empty", 1}}}    },
+    { "water", {{"earth",  {"empty",   1}},
+                {"fire",   {"steam",    1}},    }   },
     // -------------------------------- dusts --------------------------------
+    { "mud",    {{"empty",  {"earth",   0.01}}}     },
     // -------------------------------- gases --------------------------------
-    { "fire", {{"empty", {"empty", 0.1}}}   },
+    { "fire",  {{"empty",  {"empty",   0.1}},
+                {"water",  {"empty",   1}},     }   },
+    { "steam",  {{"empty",  {"empty",   0.02}}}    },
     // -------------------------------- emitters --------------------------------
-    { "empty", {{"fire_source", {"fire", 0.75}}}    },
-    { "fire_source", {{"empty", {"empty", 0.01}}} }, // bandaid fix for transformer skipping non reactive elems
+    { "empty", {{"fire_source",     {"fire",     0.75} },
+                {"water_source",    {"water",    0.75} },}  },
+
+    { "fire_source", {{"empty", {"empty", 0.005}}}   }, // bandaid fix for transformer skipping non reactive elems
+    { "water_source",{{"empty", {"empty", 0.005}}}      },
 };
 
 }

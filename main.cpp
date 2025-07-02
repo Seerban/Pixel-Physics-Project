@@ -39,10 +39,7 @@ int main() {
         for (int x = 0; x < WIDTH; ++x)
             setPixel(x, y, "empty");
 
-    setPixel(10, 10, "water");
-    setPixel(11, 10, "water");
-    setPixel(10, 11, "water");
-    setPixel(10, 9, "water");
+    setPixel(10, 10, "water_source");
     setPixel(20, 10, "sand");
     setPixel(19, 10, "sand");
     setPixel(21, 10, "sand");

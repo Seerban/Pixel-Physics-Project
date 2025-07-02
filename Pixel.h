@@ -96,7 +96,7 @@ public:
             float chance = elems::reaction[ grid[y][x]->getElem() ][elem].second;
             std::string element = elems::reaction[ grid[y][x]->getElem() ][elem].first;
             if( random() <= chance ) {
-                std::cout << "REACTING " <<  grid[y][x]->getElem() << " WITH " << elem << std::endl;
+                //std::cout << "REACTING " <<  grid[y][x]->getElem() << " WITH " << elem << std::endl;
                 setPixel(x, y, elems::reaction[ grid[y][x]->getElem() ][elem].first );
                 return true;
             }
@@ -106,7 +106,7 @@ public:
     void reaction(int x, int y) {
         if( is_empty(x, y) ) return;
         int offsets[] {1, 0,   -1, 0,   0, 1,   0, -1};
-        for(int i = 0; i < 4; i+=2) {
+        for(int i = 0; i < 9; i+=2) {
             if( inBounds(x+offsets[i], y+offsets[i+1]) ) {
                 //std::cout<< this->getElem() << ' ' << grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem() << std::endl;
                 // auxilliary element used for a mutual eaction in case neighbor gets transformed
