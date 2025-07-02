@@ -7,5 +7,5 @@ class Pixel;
 
 namespace elems {
 extern std::unordered_map< std::string, Pixel* > elements;
-extern std::unordered_map< std::string, std::unordered_map<std::string, std::string>> reaction;
+extern std::unordered_map< std::string, std::unordered_map<std::string, std::pair< std::string, float >>> reaction;
 }

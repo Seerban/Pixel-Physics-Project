@@ -2,8 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream> // debug
-#include <cstdlib> // randomizer
-#include <ctime> // "random" seed
 #include <utility>
 #include "Elements.h"
 
@@ -60,6 +58,13 @@ public:
     static bool is_empty(int x, int y) {
         return grid[y][x]->getElem() == "empty";
     }
+    static bool tryMove(int x, int y, int x2, int y2) {
+        if( inBounds(x2, y2) && is_empty(x2,y2) ) {
+            switch_pixel(x, y, x2, y2);
+            return true;
+            }
+        return false;
+    }
     static void setPixel(int x, int y, std::string p) {
         delete grid[y][x];
         Pixel::grid[y][x] = elems::elements[p]->clone();
@@ -86,11 +91,15 @@ public:
     }
     bool transform(int x, int y, std::string elem) {
         auto it = elems::reaction[ grid[y][x]->getElem() ].find(elem);
-        std::cout<<"CHECKING " << grid[y][x]->getElem() << " WITH " << elem << std::endl;
+        //std::cout<<"CHECKING " << grid[y][x]->getElem() << " WITH " << elem << std::endl;
         if( it != elems::reaction[ grid[y][x]->getElem() ].end() ) {
-            std::cout << "TRANSFORMING " <<  grid[y][x]->getElem() << " INTO " << elem << std::endl;
-            setPixel(x, y, elems::reaction[ grid[y][x]->getElem() ][elem] );
-            return true;
+            float chance = elems::reaction[ grid[y][x]->getElem() ][elem].second;
+            std::string element = elems::reaction[ grid[y][x]->getElem() ][elem].first;
+            if( random() <= chance ) {
+                std::cout << "REACTING " <<  grid[y][x]->getElem() << " WITH " << elem << std::endl;
+                setPixel(x, y, elems::reaction[ grid[y][x]->getElem() ][elem].first );
+                return true;
+            }
         }
         return false;
     }
@@ -98,16 +107,18 @@ public:
         if( is_empty(x, y) ) return;
         int offsets[] {1, 0,   -1, 0,   0, 1,   0, -1};
         for(int i = 0; i < 4; i+=2) {
-            if( inBounds(x+offsets[i], y+offsets[i+1]) && !is_empty( x+offsets[i], y+offsets[i+1] ) ) {
+            if( inBounds(x+offsets[i], y+offsets[i+1]) ) {
                 //std::cout<< this->getElem() << ' ' << grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem() << std::endl;
+                // auxilliary element used for a mutual eaction in case neighbor gets transformed
+                std::string temp_elem = grid[y][x]->getElem();
                 bool trans = transform(x, y, grid[ y+offsets[i+1] ][ x+offsets[i] ]->getElem());
-                if( trans ) transform(x+offsets[i], y+offsets[i+1], grid[ y ][ x ]->getElem());
+                if( trans || is_empty(x+offsets[i], y+offsets[i+1])) transform(x+offsets[i], y+offsets[i+1], temp_elem);
             }
         }
     }
     void process(int x, int y) {
-        movement(x, y);
         reaction(x, y);
+        movement(x, y);
     }
 
     // Derivable

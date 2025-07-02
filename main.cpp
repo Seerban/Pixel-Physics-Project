@@ -24,17 +24,20 @@ void setPixel(int x, int y, std::string p) {
 
 int main() {
     Pixel::grid.resize(HEIGHT, std::vector< Pixel* >(WIDTH));
-    for (int y = 0; y < HEIGHT; ++y)
-        for (int x = 0; x < WIDTH; ++x)
-            Pixel::grid[y][x] = new Pixel();
-
+    
+    Pixel::set_seed();
+    
     sf::RenderWindow window(sf::VideoMode(WIDTH * SCALE, HEIGHT * SCALE), "Pixel Grid");
     window.setFramerateLimit(FPS);
-
+    
     Pixel::image.create(WIDTH, HEIGHT, sf::Color::Black);
     Pixel::texture.loadFromImage(Pixel::image);
     Pixel::sprite.setTexture(Pixel::texture);
     Pixel::sprite.setScale(SCALE, SCALE);
+    
+    for (int y = 0; y < HEIGHT; ++y)
+        for (int x = 0; x < WIDTH; ++x)
+            setPixel(x, y, "empty");
 
     setPixel(10, 10, "water");
     setPixel(11, 10, "water");
@@ -45,6 +48,7 @@ int main() {
     setPixel(21, 10, "sand");
     setPixel(20, 7, "steam");
     setPixel(10, 30, "earth");
+    setPixel(15, 15, "fire_source");
 
     while (window.isOpen()) {
         sf::Event event;
