@@ -14,7 +14,8 @@ std::unordered_map< std::string, Pixel* > elements = {
     // -------------------------------- solids --------------------------------
     { "earth",  new Pixel(  "earth",    sf::Color(155, 55,  35))},
     // -------------------------------- liquids --------------------------------
-    { "fuel",   new Liquid( "fuel",     sf::Color(10,  80,  120))},
+    { "burning_fuel", new Liquid( "burning_fuel", sf::Color(255, 75, 85))},
+    { "fuel",   new Liquid( "fuel",     sf::Color(10,  25,  75))},
     { "water",  new Liquid( "water",    sf::Color(25,  55,  235))},
     // -------------------------------- dusts --------------------------------
     { "mud",    new Dust(   "mud",      sf::Color(125, 40,  55))},
@@ -51,18 +52,21 @@ std::unordered_map< std::string, std::unordered_map<std::string, std::pair< std:
     // -------------------------------- liquids --------------------------------
     { "water", {{"earth",  {"empty",   1}},
                 {"fire",   {"steam",    1}},    }   },
+    { "fuel", {{"fire",    {"burning_fuel", 1}}}    },
     // -------------------------------- dusts --------------------------------
     { "mud",    {{"empty",  {"earth",   0.01}}}     },
     // -------------------------------- gases --------------------------------
     { "fire",  {{"empty",  {"empty",   0.1}},
                 {"water",  {"empty",   1}},     }   },
-    { "steam",  {{"empty",  {"empty",   0.02}}}    },
+    { "steam",  {{"empty",  {"empty",   0.015}}}    },
     // -------------------------------- emitters --------------------------------
     { "empty", {{"fire_source",     {"fire",     0.75} },
+                {"burning_fuel",    {"fire",     0.33}  },
                 {"water_source",    {"water",    0.75} },}  },
 
+    { "burning_fuel",{{"empty", {"empty", 0.015}}}    },
     { "fire_source", {{"empty", {"empty", 0.0025}}}   }, // bandaid fix for transformer skipping non reactive elems
-    { "water_source",{{"empty", {"empty", 0.0025}}}      },
+    { "water_source",{{"empty", {"empty", 0.0025}}}   },
 };
 
 }

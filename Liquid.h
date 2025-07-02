@@ -3,7 +3,7 @@
 #include "Pixel.h"
 
 class Liquid : public Pixel {
-    int horizontal_seeking = 2;
+    int horizontal_seeking = 4;
     int hseek_it = 0;
 public:
     Liquid() : Pixel() {}

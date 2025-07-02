@@ -16,7 +16,7 @@ public:
     static sf::Sprite sprite;
 
     // Constructor
-    Pixel() : col(sf::Color::Black) {}
+    Pixel() : col(sf::Color::Black)  {}
     Pixel(std::string elem, sf::Color col) : elem(elem), col(col) {}
 
     // Getter / Setter
@@ -81,6 +81,7 @@ public:
     static void setPixel(int x, int y, std::string p) {
         delete grid[y][x];
         Pixel::grid[y][x] = elems::elements[p]->clone();
+        Pixel::grid[y][x]->randomize_colors();
         Pixel::grid[y][x]->render(x,y);
     }
     static void processPixels() {
@@ -94,13 +95,18 @@ public:
             for(int j = 0; j < grid.size(); ++j)
                 grid[i][j]->setProcessed(false);
     }
+    static float random() {
+        return (float)(rand()) / (float)(RAND_MAX); 
+    }
+    static int random_color(int x) {
+        float factor = 0.9f + static_cast<float>(random()) * 0.2f;
+        int temp =  static_cast<sf::Uint8>(std::min(255, int(x * factor)));
+        return temp;
+    }
 
     // Universal / Utility
     void render(int x, int y) {
         image.setPixel(x, y, getCol() );
-    }
-    float random() {
-        return (float)(rand()) / (float)(RAND_MAX); 
     }
     bool transform(int x, int y, std::string elem) {
         auto it = elems::reaction[ grid[y][x]->getElem() ].find(elem);
@@ -130,8 +136,12 @@ public:
         }
     }
     void process(int x, int y) {
+        //f(grid[y][x]->getElem() == "sand") std::cout << static_cast<int>(grid[y][x]->getCol().r) << std::endl;
         reaction(x, y);
         movement(x, y);
+    }
+    void randomize_colors() {
+        setCol( sf::Color(random_color(this->col.r), random_color(this->col.g), random_color(this->col.b)) );
     }
 
     // Derivable

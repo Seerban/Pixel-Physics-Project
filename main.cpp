@@ -9,8 +9,8 @@
 
 const int WIDTH = 40;
 const int HEIGHT = 40;
-const int SCALE = 8;
-const int FPS = 16;
+const int SCALE = 12;
+const int FPS = 24;
 
 std::vector<std::vector< Pixel* >> Pixel::grid;
 sf::Image Pixel::image;
@@ -51,7 +51,7 @@ int main() {
     setPixel(10, 34, "earth");
     setPixel(10, 35, "earth");
     setPixel(10, 36, "earth");
-    setPixel(10, 5, "fuel");
+    setPixel(13, 5, "fuel");
     setPixel(12, 5, "fuel");
     setPixel(11, 5, "fuel");
     setPixel(9, 5, "fuel");
