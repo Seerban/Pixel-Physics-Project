@@ -1,76 +1,9 @@
-#include <SFML/Graphics.hpp>
-#include <vector>
-#include <iostream> // debugging
-#include "Pixel.h"
-#include "Elements.h"
-#include "Liquid.h"
-#include "Gas.h"
-#include "Dust.h"
+#include "Grid.h"
 
-const int WIDTH = 40;
-const int HEIGHT = 40;
+const int SIZE = 40;
 const int SCALE = 12;
-const int FPS = 24;
-
-std::vector<std::vector< Pixel* >> Pixel::grid;
-sf::Image Pixel::image;
-sf::Texture Pixel::texture;
-sf::Sprite Pixel::sprite;
-
-// temporary until pixel service
-void setPixel(int x, int y, std::string p) {
-   Pixel::setPixel(x,y,p);
-}
 
 int main() {
-    Pixel::grid.resize(HEIGHT, std::vector< Pixel* >(WIDTH));
-    
-    Pixel::set_seed();
-    
-    sf::RenderWindow window(sf::VideoMode(WIDTH * SCALE, HEIGHT * SCALE), "Pixel Grid");
-    window.setFramerateLimit(FPS);
-    
-    Pixel::image.create(WIDTH, HEIGHT, sf::Color::Black);
-    Pixel::texture.loadFromImage(Pixel::image);
-    Pixel::sprite.setTexture(Pixel::texture);
-    Pixel::sprite.setScale(SCALE, SCALE);
-    
-    for (int y = 0; y < HEIGHT; ++y)
-        for (int x = 0; x < WIDTH; ++x)
-            setPixel(x, y, "empty");
-
-    setPixel(10, 10, "water_source");
-    setPixel(20, 10, "sand");
-    setPixel(19, 10, "sand");
-    setPixel(21, 10, "sand");
-    setPixel(20, 7, "steam");
-    setPixel(10, 30, "earth");
-    setPixel(10, 31, "earth");
-    setPixel(10, 32, "earth");
-    setPixel(10, 33, "earth");
-    setPixel(10, 34, "earth");
-    setPixel(10, 35, "earth");
-    setPixel(10, 36, "earth");
-    setPixel(13, 5, "fuel");
-    setPixel(12, 5, "fuel");
-    setPixel(11, 5, "fuel");
-    setPixel(9, 5, "fuel");
-    setPixel(15, 15, "fire_source");
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        Pixel::processPixels();
-        Pixel::texture.update(Pixel::image);
-
-        window.clear();
-        window.draw(Pixel::sprite);
-        window.display();
-    }
-
-    return 0;
+    Grid grid(SIZE, SCALE);
+    grid.start();
 }
