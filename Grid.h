@@ -4,36 +4,35 @@
 #include <time.h>
 #include <random>
 #include <utility>
-#include <unordered_map>
 #include "Pixel.h"
 
 class Grid {
-    int size;
-    std::vector<std::vector<Pixel>> grid;
-    sf::Image image;
-    sf::Texture texture;
-    sf::Sprite sprite;
-    sf::RenderWindow window;
-public:
-    static std::unordered_map<State, void(Grid::*)(int,int)> moveFunc;
-
+    static bool even_tick; // alternates every process tick
+    static int size; // size of grid on both axis
+    static std::vector<std::vector<Pixel>> grid;
+    static sf::Image image;
+    static sf::Texture texture;
+    static sf::Sprite sprite;
+    static sf::RenderWindow window;
+    static std::vector<void(*)(int,int)> stateProcess; // inititalized in element.cpp
+    public:
+    // constructors
     Grid() : Grid(40) {}
-    Grid(int size, int scale = 8) : 
-        size(size),
-        window(sf::VideoMode(size * scale, size * scale), "Pixel Grid") {
+    Grid(int size, int scale = 8) {
+            this->size = size;
+            window.create( sf::VideoMode(size*scale, size*scale), "Grid" );
             grid.resize(size, std::vector<Pixel>(size));
             image.create(size, size, sf::Color::Black);
             texture.loadFromImage(image);
             sprite.setTexture(texture);
             sprite.setScale(scale, scale);
-            window.setFramerateLimit(18);
+            window.setFramerateLimit(12);
         }
-    
+    // main process functions
     void start() {
-        setPixel(0, 0, "water");
-        setPixel(1, 0, "dirt");
-        setPixel(5, 5, "sand");
-        switchPixel(0,0,1,0);
+        srand(time(0));
+        setPixel(20, 20, "fire_source");
+        setPixel(20, 35, "water_source");
 
         while (window.isOpen()) {
         sf::Event event;
@@ -51,42 +50,64 @@ public:
         }
     }
     void mainProcess() {
+        even_tick = !even_tick;
         // bottom-to-top loop for processing liquids/dusts
         for(int i = size-1; i >= 0; --i) {
             int j, goal, incr;
             // go from left to right or right to left alternating every row
-            if(i % 2 == 0) { j = 0; goal = size; incr = 1; }
+            if( (i + int(even_tick)) % 2  == 0) { j = 0; goal = size; incr = 1; }
             else { j = size-1; goal = 0; incr = -1; }
 
             while( j != goal ) {
-                (this->*moveFunc[ grid[i][j].getState() ])(j, i);
+                if( grid[i][j].getState() != elem::GAS && !grid[i][j].getProcessed() ) {
+                    grid[i][j].setProcessed(true);
+                    // movement utility functions defined in grid.cpp
+                    (stateProcess[ grid[i][j].getState() ])(j, i);
+                }
                 j += incr;
             }
         }
-    }
+        // top-to-bottom loop for processing gas
+        for(int i = 0; i < size; ++i) {
+            int j, goal, incr;
+            // go from left to right or right to left alternating every row
+            if( (i + int(even_tick)) % 2  == 0) { j = 0; goal = size; incr = 1; }
+            else { j = size-1; goal = 0; incr = -1; }
 
-    bool inBounds(int x, int y) {
+            while( j != goal ) {
+                if( grid[i][j].getState() == elem::GAS && !grid[i][j].getProcessed() ) {
+                    grid[i][j].setProcessed(true);
+                    // movement utility functions defined in grid.cpp
+                    (stateProcess[ grid[i][j].getState() ])(j, i);
+                }
+                j += incr;
+            }
+        }
+
+        for(int i = 0; i < size; ++i)
+            for(int j = 0; j < size; ++j)
+                grid[i][j].setProcessed(false);
+    }
+    // pixel grid functions 
+    static bool inBounds(int x, int y) {
         return !(x<0 || y<0 || x>=size || y>=size);
     }
-    bool isEmpty(int x, int y) {
+    static bool isEmpty(int x, int y) {
         return (grid[y][x].getElem() == ""); // empty element is ""
     }
-    void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
+    static std::string getElem(int x, int y) {
+        return grid[y][x].getElem();
+    }
+    static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
         grid[y][x] = Pixel(s);
         render(x, y);
     }
-    void render(int x, int y) {
+    static void render(int x, int y) {
         image.setPixel(x, y, grid[y][x].getCol() );
-        std::cout<<"rendered pixel "<<x<<' '<<y<<std::endl;
     }
-    void switchPixel(int x, int y, int x2, int y2) {
+    static void switchPixel(int x, int y, int x2, int y2) {
         std::swap( grid[y][x], grid[y2][x2] );
         render(x,y);
         render(x2,y2);
     }
-
-    void moveSolid(int x, int y);
-    void moveDust(int x, int y);
-    void moveLiquid(int x, int y);
-    void moveGas(int x, int y);
 };
