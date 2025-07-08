@@ -1,5 +1,6 @@
 #include "Element.h"
 #include "Grid.h"
+#include <cstdlib>
 
 // contains list of elements
 
@@ -14,6 +15,7 @@ element el(State state, const char* hex) {
     return e;
 }
 
+// List of elements
 std::unordered_map< std::string, element > list {
     {"",        el(SOLID,   "000000")},
     {"dirt",    el(SOLID,   "964B00")},
@@ -28,11 +30,26 @@ std::unordered_map< std::string, element > list {
     {"fire_source",     el(EMITTER, "FF0000")},
     {"water_source",    el(EMITTER, "0000FF")},
 };
+// Element Reactions
+std::unordered_map< std::string, std::unordered_map< std::string, std::string > > reaction {
+    {"fire",    {{"water", ""}}, },
+    {"water",   {{"fire", "steam"}}, },
+};
+// Element emits other Elem
 std::unordered_map< std::string, std::string > emits {
     {"fire_source",     "fire"},
     {"water_source",    "water"},
 };
+// Chance to disappear when exposed
+std::unordered_map< std::string, float > evaporate {
+    {"steam", 0.1},
+    {"fire", 0.1},
+};
 
+// Utility functions for state process
+float randf() {
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
 int randomIncrement() {
     return ( random() % 2 == 0 ) ? 1 : -1;
 }
@@ -46,17 +63,29 @@ bool tryMove(int x, int y, int x2, int y2) {
 void tryPlace(int x, int y, std::string element) {
     if( Grid::inBounds(x, y) && Grid::isEmpty(x, y) ) Grid::setPixel(x, y, element);
 }
+// Movement process for each state
+// returns 1 if erased
+int universalProcess(int x, int y) {
+    if( randf() < evaporate[ Grid::getElem(x, y) ] ) {
+        Grid::setPixel(x, y, "");
+        return 1;
+    }
+    return 0;
+}
 
-void solidProcess(int x, int y) { 
+void solidProcess(int x, int y) {
+    if( universalProcess(x, y) ) return;
     return;
 }
 void dustProcess(int x, int y) {
+    if( universalProcess(x, y) ) return;
     if( elem::tryMove(x, y, x, y+1) ) return;
     int incr = elem::randomIncrement();
     if( elem::tryMove(x, y, x+incr, y+1) ) return;
     if( elem::tryMove(x, y, x-incr, y+1) ) return;
 }
-void liquidProcess(int x, int y) { 
+void liquidProcess(int x, int y) {
+    if( universalProcess(x, y) ) return;
     if( elem::tryMove(x, y, x, y+1) ) return;
     int incr = elem::randomIncrement();
     if( elem::tryMove(x, y, x+incr, y+1) ) return;
@@ -65,6 +94,7 @@ void liquidProcess(int x, int y) {
     if( elem::tryMove(x, y, x+incr, y) ) return;
 }
 void gasProcess(int x, int y) {
+    if( universalProcess(x, y) ) return;
     if( elem::tryMove(x, y, x, y-1) ) return;
     int incr = elem::randomIncrement();
     if( elem::tryMove(x, y, x+incr, y-1) ) return;
@@ -73,6 +103,7 @@ void gasProcess(int x, int y) {
     if( elem::tryMove(x, y, x+incr, y) ) return;
 }
 void emitterProcess(int x, int y) {
+    if( universalProcess(x, y) ) return;
     std::string to_place = elem::emits[ Grid::getElem(x, y) ];
     tryPlace(x-1, y, to_place);
     tryPlace(x+1, y, to_place);

@@ -9,6 +9,7 @@
 class Grid {
     static bool even_tick; // alternates every process tick
     static int size; // size of grid on both axis
+    static int scale; // scale multiplier of window size
     static std::vector<std::vector<Pixel>> grid;
     static sf::Image image;
     static sf::Texture texture;
@@ -20,6 +21,7 @@ class Grid {
     Grid() : Grid(40) {}
     Grid(int size, int scale = 8) {
             this->size = size;
+            this->scale = scale;
             window.create( sf::VideoMode(size*scale, size*scale), "Grid" );
             grid.resize(size, std::vector<Pixel>(size));
             image.create(size, size, sf::Color::Black);
@@ -31,22 +33,18 @@ class Grid {
     // main process functions
     void start() {
         srand(time(0));
-        setPixel(20, 20, "fire_source");
-        setPixel(20, 35, "water_source");
+        setPixel(19, 30, "fire_source");
+        setPixel(21, 10, "water_source");
 
         while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            }
+            handleInput();
 
-        mainProcess();
-        texture.update(image);
+            mainProcess();
+            texture.update(image);
 
-        window.clear();
-        window.draw(sprite);
-        window.display();
+            window.clear();
+            window.draw(sprite);
+            window.display();
         }
     }
     void mainProcess() {
@@ -62,6 +60,7 @@ class Grid {
                 if( grid[i][j].getState() != elem::GAS && !grid[i][j].getProcessed() ) {
                     grid[i][j].setProcessed(true);
                     // movement utility functions defined in grid.cpp
+                    reactionProcess(i, j);
                     (stateProcess[ grid[i][j].getState() ])(j, i);
                 }
                 j += incr;
@@ -88,6 +87,13 @@ class Grid {
             for(int j = 0; j < size; ++j)
                 grid[i][j].setProcessed(false);
     }
+    void handleInput(); // defined in input.h
+    void reactionProcess(int x, int y) {
+        checkReaction(x, y, x+1, y);
+        //checkReaction(x, y, x-1, y);
+        //checkReaction(x, y, x, y+1);
+        checkReaction(x, y, x, y-1);
+    }
     // pixel grid functions 
     static bool inBounds(int x, int y) {
         return !(x<0 || y<0 || x>=size || y>=size);
@@ -109,5 +115,18 @@ class Grid {
         std::swap( grid[y][x], grid[y2][x2] );
         render(x,y);
         render(x2,y2);
+    }
+    static void checkReaction(int x, int y, int x2, int y2) {
+        if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
+        std::string elem1 = grid[y][x].getElem();
+        std::string elem2 = grid[y2][x2].getElem();
+        auto it = elem::reaction[elem1].find( elem2 );
+        auto it2 = elem::reaction[elem2].find( elem1 );
+        if( it != elem::reaction[elem1].end() ) {
+            setPixel(x, y, elem::reaction[elem1][elem2] );
+        }
+        if( it2 != elem::reaction[elem2].end() ) {
+            setPixel(x, y, elem::reaction[elem2][elem1] );
+        }
     }
 };

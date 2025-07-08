@@ -32,5 +32,7 @@ element el(State state, char* hex);
 
 // map from state to process function
 extern std::unordered_map< std::string, element > list;
+extern std::unordered_map< std::string, std::unordered_map< std::string, std::string > > reaction;
 extern std::unordered_map< std::string, std::string > emits;
+extern std::unordered_map< std::string, float > evaporate;
 }
