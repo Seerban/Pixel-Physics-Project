@@ -7,7 +7,6 @@
 #include "Pixel.h"
 
 class Grid {
-    static bool even_tick; // alternates every process tick
     static int size; // size of grid on both axis
     static int scale; // scale multiplier of window size
     static std::vector<std::vector<Pixel>> grid;
@@ -48,39 +47,25 @@ class Grid {
         }
     }
     void mainProcess() {
-        even_tick = !even_tick;
         // bottom-to-top loop for processing liquids/dusts
         for(int i = size-1; i >= 0; --i) {
-            int j, goal, incr;
-            // go from left to right or right to left alternating every row
-            if( (i + int(even_tick)) % 2  == 0) { j = 0; goal = size; incr = 1; }
-            else { j = size-1; goal = 0; incr = -1; }
-
-            while( j != goal ) {
+            for( int j = 0; j < size; ++j )
                 if( grid[i][j].getState() != elem::GAS && !grid[i][j].getProcessed() ) {
                     grid[i][j].setProcessed(true);
                     // movement utility functions defined in grid.cpp
                     reactionProcess(i, j);
                     (stateProcess[ grid[i][j].getState() ])(j, i);
                 }
-                j += incr;
-            }
         }
         // top-to-bottom loop for processing gas
         for(int i = 0; i < size; ++i) {
-            int j, goal, incr;
-            // go from left to right or right to left alternating every row
-            if( (i + int(even_tick)) % 2  == 0) { j = 0; goal = size; incr = 1; }
-            else { j = size-1; goal = 0; incr = -1; }
-
-            while( j != goal ) {
+            for( int j = 0; j < size; ++j )
                 if( grid[i][j].getState() == elem::GAS && !grid[i][j].getProcessed() ) {
                     grid[i][j].setProcessed(true);
                     // movement utility functions defined in grid.cpp
+                    reactionProcess(i, j);
                     (stateProcess[ grid[i][j].getState() ])(j, i);
                 }
-                j += incr;
-            }
         }
 
         for(int i = 0; i < size; ++i)
