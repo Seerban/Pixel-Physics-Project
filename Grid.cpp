@@ -9,3 +9,7 @@ sf::Image Grid::image;
 sf::Texture Grid::texture;
 sf::Sprite Grid::sprite;
 sf::RenderWindow Grid::window;
+
+float randf() {
+    return double(random()) / RAND_MAX;
+}

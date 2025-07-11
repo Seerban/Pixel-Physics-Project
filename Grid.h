@@ -4,7 +4,10 @@
 #include <time.h>
 #include <random>
 #include <utility>
+#include "Element.h"
 #include "Pixel.h"
+
+float randf();
 
 class Grid {
     static int size; // size of grid on both axis
@@ -32,14 +35,12 @@ class Grid {
     // main process functions
     void start() {
         srand(time(0));
-        setPixel(19, 30, "fire_source");
-        setPixel(21, 10, "water_source");
 
         while (window.isOpen()) {
             handleInput();
 
             mainProcess();
-            texture.update(image);
+            texture.update(image); // should be replace to update only 1 pixel but newest sfml incompatible with my system
 
             window.clear();
             window.draw(sprite);
@@ -75,8 +76,8 @@ class Grid {
     void handleInput(); // defined in input.h
     void reactionProcess(int x, int y) {
         checkReaction(x, y, x+1, y);
-        //checkReaction(x, y, x-1, y);
-        //checkReaction(x, y, x, y+1);
+        checkReaction(x, y, x-1, y);
+        checkReaction(x, y, x, y+1);
         checkReaction(x, y, x, y-1);
     }
     // pixel grid functions 
@@ -88,6 +89,9 @@ class Grid {
     }
     static std::string getElem(int x, int y) {
         return grid[y][x].getElem();
+    }
+    static float getDensity(int x, int y) {
+        return grid[y][x].getState();
     }
     static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
         grid[y][x] = Pixel(s);
@@ -106,12 +110,15 @@ class Grid {
         std::string elem1 = grid[y][x].getElem();
         std::string elem2 = grid[y2][x2].getElem();
         auto it = elem::reaction[elem1].find( elem2 );
-        auto it2 = elem::reaction[elem2].find( elem1 );
-        if( it != elem::reaction[elem1].end() ) {
-            setPixel(x, y, elem::reaction[elem1][elem2] );
+        if( elem::list[elem2].burning && elem::melt.find(elem1) != elem::melt.end() ) {
+            setPixel(x, y, elem::melt[elem1] );
+            return;
         }
-        if( it2 != elem::reaction[elem2].end() ) {
-            setPixel(x, y, elem::reaction[elem2][elem1] );
-        }
+        //auto it2 = elem::reaction[elem2].find( elem1 );
+        if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
+            setPixel(x, y, elem::reaction[elem1][elem2].first);
+        //if( it2 != elem::reaction[elem2].end() && elem::reaction[elem2][elem1].second ) {
+        //    setPixel(x, y, elem::reaction[elem2][elem1].first );
+        //}
     }
 };

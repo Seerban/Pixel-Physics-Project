@@ -5,12 +5,12 @@
 #include <iostream>
 
 namespace elem {
-// element states of matter
+// element states of matter (ordered by default density, can be modified by element)
 enum State {
-    SOLID, 
-    DUST, 
-    LIQUID, 
     GAS,
+    LIQUID, 
+    DUST, 
+    SOLID, 
     EMITTER, // "spawns" other pixels and is SOLID
 };
 
@@ -25,6 +25,7 @@ void emitterProcess(int x, int y);
 struct element {
     sf::Color col;
     State state;
+    bool burning = false;
 };
 
 // utility function for easier defining
@@ -32,7 +33,8 @@ element el(State state, char* hex);
 
 // map from state to process function
 extern std::unordered_map< std::string, element > list;
-extern std::unordered_map< std::string, std::unordered_map< std::string, std::string > > reaction;
+extern std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction;
 extern std::unordered_map< std::string, std::string > emits;
 extern std::unordered_map< std::string, float > evaporate;
+extern std::unordered_map< std::string, std::string > melt;
 }

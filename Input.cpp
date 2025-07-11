@@ -47,6 +47,7 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'d', "dirt"},
     {'w', "water"},
     {'f', "fire"},
+    {'F', "fuel"},
     {'s', "sand"},
     {'S', "steam"},
 };
@@ -84,7 +85,7 @@ void Grid::handleInput() {
             // 124 is '0' because of the added value for letter chars
             if(key >= 124 && key <= 127) {
                 selected_brush = key - 124;
-                std::cout<<"selectec brush size "<< selected_brush << std::endl;
+                std::cout<<"selected brush size "<< selected_brush << std::endl;
                 return;
             }
             // capitalize if shift

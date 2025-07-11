@@ -1,39 +1,44 @@
 #include "Element.h"
 #include "Grid.h"
 #include <cstdlib>
+#include <cstring>
 
 // contains list of elements
 
 namespace elem {
 
-element el(State state, const char* hex) {
+element el(State state, const char* hex, const char* tags = "") {
     element e;
     int r, g, b;
     sscanf(hex, "%02x%02x%02x", &r, &g, &b);
     e.col = sf::Color(r,g,b);
     e.state = state;
+    if( strchr(tags, 'b') ) e.burning = true;
     return e;
 }
 
 // List of elements
+// tags: b - burning
 std::unordered_map< std::string, element > list {
-    {"",        el(SOLID,   "000000")},
-    {"dirt",    el(SOLID,   "964B00")},
+    {"",                el(SOLID,   "000000")},
+    {"dirt",            el(SOLID,   "964B00")},
+    {"glass",           el(SOLID,   "DDDDDD")},
 
-    {"water",   el(LIQUID,  "0E87CC")},
+    {"burning_fuel",    el(LIQUID,  "FF2222", "b")},
+    {"fuel",            el(LIQUID,  "151555")},
+    {"water",           el(LIQUID,  "0E87CC")},
 
-    {"sand",    el(DUST,    "C2B280")},
+    {"sand",            el(DUST,    "C2B280")},
 
-    {"fire",    el(GAS,     "FF5A00")},
-    {"steam",   el(GAS,     "888888")},
+    {"fire",            el(GAS,     "FF5A00", "b")},
+    {"steam",           el(GAS,     "888888")},
 
-    {"fire_source",     el(EMITTER, "FF0000")},
+    {"fire_source",     el(EMITTER, "FF0000", "b")},
     {"water_source",    el(EMITTER, "0000FF")},
 };
 // Element Reactions
-std::unordered_map< std::string, std::unordered_map< std::string, std::string > > reaction {
-    {"fire",    {{"water", ""}}, },
-    {"water",   {{"fire", "steam"}}, },
+std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
+    {"fire",    { {"water", {"", 1}}, }},
 };
 // Element emits other Elem
 std::unordered_map< std::string, std::string > emits {
@@ -44,8 +49,14 @@ std::unordered_map< std::string, std::string > emits {
 std::unordered_map< std::string, float > evaporate {
     {"steam", 0.1},
     {"fire", 0.1},
+    {"burning_fuel", 0.033},
 };
-
+// reaction with burning element
+std::unordered_map< std::string, std::string > melt {
+    {"fuel", "burning_fuel"},
+    {"sand", "glass"},
+    {"water", "steam"},
+};
 // Utility functions for state process
 float randf() {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -54,7 +65,7 @@ int randomIncrement() {
     return ( random() % 2 == 0 ) ? 1 : -1;
 }
 bool tryMove(int x, int y, int x2, int y2) {
-    if( Grid::inBounds(x2, y2) && Grid::isEmpty(x2, y2) ) {
+    if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) ||  Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
         Grid::switchPixel(x, y, x2, y2);
         return true;
     }
@@ -114,9 +125,9 @@ void emitterProcess(int x, int y) {
 }
 //indexes from states
 std::vector<void(*)(int,int)> Grid::stateProcess = {
-    &elem::solidProcess,
-    &elem::dustProcess,
-    &elem::liquidProcess,
     &elem::gasProcess,
+    &elem::liquidProcess,
+    &elem::dustProcess,
+    &elem::solidProcess,
     &elem::emitterProcess,
 };
