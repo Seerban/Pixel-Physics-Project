@@ -11,7 +11,6 @@ class Pixel {
     std::string elem;
     sf::Color col;
     elem::State state;
-    float evaporate;
     bool processed;
 public:
     // CONSTRUCTORS

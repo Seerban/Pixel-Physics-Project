@@ -110,10 +110,12 @@ class Grid {
         std::string elem1 = grid[y][x].getElem();
         std::string elem2 = grid[y2][x2].getElem();
         auto it = elem::reaction[elem1].find( elem2 );
+        // check if should melt
         if( elem::list[elem2].burning && elem::melt.find(elem1) != elem::melt.end() ) {
             setPixel(x, y, elem::melt[elem1] );
             return;
         }
+        // check special interaction with neighbors
         //auto it2 = elem::reaction[elem2].find( elem1 );
         if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
             setPixel(x, y, elem::reaction[elem1][elem2].first);

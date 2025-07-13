@@ -14,6 +14,7 @@ element el(State state, const char* hex, const char* tags = "") {
     e.col = sf::Color(r,g,b);
     e.state = state;
     if( strchr(tags, 'b') ) e.burning = true;
+    if( strchr(tags, 'e') ) e.evaporates = true;
     return e;
 }
 
@@ -24,16 +25,16 @@ std::unordered_map< std::string, element > list {
     {"dirt",            el(SOLID,   "964B00")},
     {"glass",           el(SOLID,   "DDDDDD")},
 
-    {"burning_fuel",    el(LIQUID,  "FF2222", "b")},
+    {"burning_fuel",    el(LIQUID,  "FF2222", "be")},
     {"fuel",            el(LIQUID,  "151555")},
     {"water",           el(LIQUID,  "0E87CC")},
 
     {"sand",            el(DUST,    "C2B280")},
 
-    {"fire",            el(GAS,     "FF5A00", "b")},
-    {"steam",           el(GAS,     "888888")},
+    {"fire",            el(GAS,     "FF5A00", "be")},
+    {"steam",           el(GAS,     "888888", "e")},
 
-    {"fire_source",     el(EMITTER, "FF0000", "b")},
+    {"fire_source",     el(EMITTER, "FF0000", "be")},
     {"water_source",    el(EMITTER, "0000FF")},
 };
 // Element Reactions
@@ -45,17 +46,11 @@ std::unordered_map< std::string, std::string > emits {
     {"fire_source",     "fire"},
     {"water_source",    "water"},
 };
-// Chance to disappear when exposed
-std::unordered_map< std::string, float > evaporate {
-    {"steam", 0.1},
-    {"fire", 0.1},
-    {"burning_fuel", 0.033},
-};
 // reaction with burning element
 std::unordered_map< std::string, std::string > melt {
-    {"fuel", "burning_fuel"},
-    {"sand", "glass"},
-    {"water", "steam"},
+    {"fuel",    "burning_fuel"},
+    {"sand",    "glass"},
+    {"water",   "steam"},
 };
 // Utility functions for state process
 float randf() {
@@ -64,8 +59,8 @@ float randf() {
 int randomIncrement() {
     return ( random() % 2 == 0 ) ? 1 : -1;
 }
-bool tryMove(int x, int y, int x2, int y2) {
-    if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) ||  Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
+bool tryMove(int x, int y, int x2, int y2, bool gas = false) {
+    if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) || Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
         Grid::switchPixel(x, y, x2, y2);
         return true;
     }
@@ -77,7 +72,7 @@ void tryPlace(int x, int y, std::string element) {
 // Movement process for each state
 // returns 1 if erased
 int universalProcess(int x, int y) {
-    if( randf() < evaporate[ Grid::getElem(x, y) ] ) {
+    if( list[Grid::getElem(x, y)].evaporates && randf() < 0.1 ) {
         Grid::setPixel(x, y, "");
         return 1;
     }
@@ -106,8 +101,13 @@ void liquidProcess(int x, int y) {
 }
 void gasProcess(int x, int y) {
     if( universalProcess(x, y) ) return;
-    if( elem::tryMove(x, y, x, y-1) ) return;
     int incr = elem::randomIncrement();
+    if( randf() < 0.85 )
+        if( elem::tryMove(x, y, x, y-1) ) return;
+    else {
+        if( elem::tryMove(x, y, x+incr, y-1) ) return;
+        if( elem::tryMove(x, y, x-incr, y-1) ) return;    
+    }
     if( elem::tryMove(x, y, x+incr, y-1) ) return;
     if( elem::tryMove(x, y, x-incr, y-1) ) return;
     if( elem::tryMove(x, y, x+incr, y) ) return;

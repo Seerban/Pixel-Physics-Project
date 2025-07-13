@@ -26,6 +26,7 @@ struct element {
     sf::Color col;
     State state;
     bool burning = false;
+    bool evaporates = false;
 };
 
 // utility function for easier defining
@@ -35,6 +36,5 @@ element el(State state, char* hex);
 extern std::unordered_map< std::string, element > list;
 extern std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction;
 extern std::unordered_map< std::string, std::string > emits;
-extern std::unordered_map< std::string, float > evaporate;
 extern std::unordered_map< std::string, std::string > melt;
 }
