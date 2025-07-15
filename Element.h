@@ -27,6 +27,7 @@ struct element {
     State state;
     bool burning = false;
     bool evaporates = false;
+    bool fluid = false;
 };
 
 // utility function for easier defining

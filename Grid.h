@@ -12,6 +12,9 @@ float randf();
 class Grid {
     static int size; // size of grid on both axis
     static int scale; // scale multiplier of window size
+
+    bool even_state = false;
+
     static std::vector<std::vector<Pixel>> grid;
     static sf::Image image;
     static sf::Texture texture;
@@ -48,24 +51,29 @@ class Grid {
         }
     }
     void mainProcess() {
+        // alternate left-to-right every frame
+        int j, fin, incr;
+        if( even_state ) { j = 0; fin = size; incr = 1; }
+        else { j = size-1; fin = -1; incr = -1; }
+        even_state = !even_state;
         // bottom-to-top loop for processing liquids/dusts
         for(int i = size-1; i >= 0; --i) {
-            for( int j = 0; j < size; ++j )
-                if( grid[i][j].getState() != elem::GAS && !grid[i][j].getProcessed() ) {
-                    grid[i][j].setProcessed(true);
+            for( int j2 = j; j2 != fin; j2 += incr )
+                if( grid[i][j2].getState() != elem::GAS && !grid[i][j2].getProcessed() ) {
+                    grid[i][j2].setProcessed(true);
                     // movement utility functions defined in grid.cpp
-                    reactionProcess(i, j);
-                    (stateProcess[ grid[i][j].getState() ])(j, i);
+                    reactionProcess(i, j2);
+                    (stateProcess[ grid[i][j2].getState() ])(j2, i);
                 }
         }
         // top-to-bottom loop for processing gas
         for(int i = 0; i < size; ++i) {
-            for( int j = 0; j < size; ++j )
-                if( grid[i][j].getState() == elem::GAS && !grid[i][j].getProcessed() ) {
-                    grid[i][j].setProcessed(true);
+            for( int j2 = j; j2 != fin; j2 += incr )
+                if( grid[i][j2].getState() == elem::GAS && !grid[i][j2].getProcessed() ) {
+                    grid[i][j2].setProcessed(true);
                     // movement utility functions defined in grid.cpp
-                    reactionProcess(i, j);
-                    (stateProcess[ grid[i][j].getState() ])(j, i);
+                    reactionProcess(i, j2);
+                    (stateProcess[ grid[i][j2].getState() ])(j2, i);
                 }
         }
 
@@ -116,9 +124,14 @@ class Grid {
             return;
         }
         // check special interaction with neighbors
-        //auto it2 = elem::reaction[elem2].find( elem1 );
         if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
-            setPixel(x, y, elem::reaction[elem1][elem2].first);
+        setPixel(x, y, elem::reaction[elem1][elem2].first);
+        
+        //auto it2 = elem::reaction[elem2].find( elem1 );
+        //if( elem::list[elem1].burning && elem::melt.find(elem2) != elem::melt.end() ) {
+        //    setPixel(x, y, elem::melt[elem2] );
+        //    return;
+        //}
         //if( it2 != elem::reaction[elem2].end() && elem::reaction[elem2][elem1].second ) {
         //    setPixel(x, y, elem::reaction[elem2][elem1].first );
         //}

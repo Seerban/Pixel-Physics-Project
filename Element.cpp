@@ -15,11 +15,12 @@ element el(State state, const char* hex, const char* tags = "") {
     e.state = state;
     if( strchr(tags, 'b') ) e.burning = true;
     if( strchr(tags, 'e') ) e.evaporates = true;
+    if( strchr(tags, 'f') ) e.fluid = true;
     return e;
 }
 
 // List of elements
-// tags: b - burning
+// tags: b - burning, e - evaporates, f - fluider
 std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000")},
     {"dirt",            el(SOLID,   "964B00")},
@@ -27,7 +28,7 @@ std::unordered_map< std::string, element > list {
 
     {"burning_fuel",    el(LIQUID,  "FF2222", "be")},
     {"fuel",            el(LIQUID,  "151555")},
-    {"water",           el(LIQUID,  "0E87CC")},
+    {"water",           el(LIQUID,  "0E87CC", "f")},
 
     {"sand",            el(DUST,    "C2B280")},
 
@@ -70,7 +71,7 @@ void tryPlace(int x, int y, std::string element) {
     if( Grid::inBounds(x, y) && Grid::isEmpty(x, y) ) Grid::setPixel(x, y, element);
 }
 // Movement process for each state
-// returns 1 if erased
+// returns 1 if erased/transformed
 int universalProcess(int x, int y) {
     if( list[Grid::getElem(x, y)].evaporates && randf() < 0.1 ) {
         Grid::setPixel(x, y, "");
@@ -96,8 +97,14 @@ void liquidProcess(int x, int y) {
     int incr = elem::randomIncrement();
     if( elem::tryMove(x, y, x+incr, y+1) ) return;
     if( elem::tryMove(x, y, x-incr, y+1) ) return;
-    if( elem::tryMove(x, y, x+incr, y) ) return;
-    if( elem::tryMove(x, y, x+incr, y) ) return;
+    if( elem::tryMove(x, y, x+incr, y) ) {
+        if( elem::list[ Grid::getElem(x+incr, y) ].fluid ) elem::tryMove(x+incr, y, x+2*incr, y);
+        return;
+    }
+    if( elem::tryMove(x, y, x-incr, y) ) {
+        if( elem::list[ Grid::getElem(x-incr, y) ].fluid ) elem::tryMove(x-incr, y, x-2*incr, y);
+        return;
+    }
 }
 void gasProcess(int x, int y) {
     if( universalProcess(x, y) ) return;
