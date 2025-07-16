@@ -25,6 +25,7 @@ std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000")},
     {"dirt",            el(SOLID,   "964B00")},
     {"glass",           el(SOLID,   "DDDDDD")},
+    {"ice",             el(SOLID,   "D6EAFF")},
 
     {"burning_fuel",    el(LIQUID,  "FF2222", "be")},
     {"fuel",            el(LIQUID,  "151555")},
@@ -50,6 +51,7 @@ std::unordered_map< std::string, std::string > emits {
 // reaction with burning element
 std::unordered_map< std::string, std::string > melt {
     {"fuel",    "burning_fuel"},
+    {"ice",     "water"},
     {"sand",    "glass"},
     {"water",   "steam"},
 };

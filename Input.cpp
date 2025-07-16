@@ -48,6 +48,7 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'w', "water"},
     {'f', "fire"},
     {'F', "fuel"},
+    {'i', "ice"},
     {'s', "sand"},
     {'S', "steam"},
 };
