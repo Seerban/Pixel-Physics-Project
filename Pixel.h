@@ -38,4 +38,6 @@ public:
     void setState(elem::State s) { this->state = s; }
     bool getProcessed() { return this->processed; }
     void setProcessed(bool b) { this->processed = b; }
+    float getWet() { return this->wet; }
+    void setWet(float f) { this->wet = f; }
 };

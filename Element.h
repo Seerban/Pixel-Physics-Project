@@ -25,10 +25,12 @@ void emitterProcess(int x, int y);
 struct element {
     sf::Color col;
     State state;
-    float density = 1;
-    bool burning = false;
-    bool evaporates = false;
-    bool fluid = false;
+    float density = 1; // reversed for gases
+    bool burning = false; // is hot
+    bool evaporates = false; // evaporates into anothe relement
+    bool fluid = false; // flows faster 
+    bool sponge = false; // absorbs water
+    bool wet = false;
 };
 
 // utility function for easier defining
@@ -40,4 +42,6 @@ extern std::unordered_map< std::string, std::unordered_map< std::string, std::pa
 extern std::unordered_map< std::string, std::string > emits;
 extern std::unordered_map< std::string, std::string > melt;
 extern std::unordered_map< std::string, std::string > evap_to;
+extern std::unordered_map< std::string, std::string > wet_to;
+extern std::unordered_map< std::string, std::string > dry_to;
 }

@@ -17,39 +17,38 @@ element el(State state, const char* hex, float density = 1, const char* tags = "
     if( strchr(tags, 'b') ) e.burning = true;
     if( strchr(tags, 'e') ) e.evaporates = true;
     if( strchr(tags, 'f') ) e.fluid = true;
+    if( strchr(tags, 's') ) e.sponge = true;
+    if( strchr(tags, 'w') ) e.wet = true;
     return e;
 }
 
 // List of elements
 std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000", 0.5)},
-    {"dirt",            el(SOLID,   "964B00", 2)},
+    {"dirt",            el(SOLID,   "964B00", 2,    "s")},
     {"glass",           el(SOLID,   "DDDDDD", 2)},
     {"ice",             el(SOLID,   "AAAAFF", 2)},
     {"rock",            el(SOLID,   "555555", 2)},
-    {"wet_sand",        el(SOLID,   "A28260", 2)},
+    {"wet_sand",        el(SOLID,   "A28260", 2,    "s")},
 
-    {"burning_gasoline",el(LIQUID,  "FF2222", 0.5,  "be")},
-    {"gasoline",        el(LIQUID,  "151555", 0.5)},
-    {"water",           el(LIQUID,  "0E87CC", 1,    "f")},
+    {"burning_gasoline",el(LIQUID,  "FF2222", 0.9,  "be")},
+    {"gasoline",        el(LIQUID,  "151555", 0.9)},
+    {"water",           el(LIQUID,  "0E87CC", 1,    "wf")},
 
     {"gravel",          el(DUST,    "999999", 2)},
-    {"sand",            el(DUST,    "C2B280", 2)},
-    {"mud",             el(DUST,    "70543E", 2)},
+    {"sand",            el(DUST,    "C2B280", 2,    "s")},
+    {"mud",             el(DUST,    "70543E", 2,    "s")},
 
-    {"fire",            el(GAS,     "FF5A00", 0.1, "be")},
-    {"smoke",           el(GAS,     "333333", 0.2, "e")},
-    {"steam",           el(GAS,     "888888", 0.3, "e")},
+    {"fire",            el(GAS,     "FF5A00", 0.3,  "be")},
+    {"smoke",           el(GAS,     "333333", 0.2,  "e")},
+    {"steam",           el(GAS,     "888888", 0.1,  "e")},
 
-    {"fire_source",     el(EMITTER, "FF5000", 1, "b")},
-    {"water_source",    el(EMITTER, "0080C0", 1)},
+    {"fire_source",     el(EMITTER, "FF5A00", 1,    "b")},
+    {"water_source",    el(EMITTER, "0E87CC", 1)},
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
-    {"dirt",    { {"water", {"mud", 0.5}}, }},
-    {"fire",    { {"water", {"", 1}}, {"ice", {"", 1}},  }},
-    {"sand",    { {"water", {"wet_sand", 1}}, }},
-    {"water",   { {"dirt",  {"", 1}}, }},
+    {"fire",    { {"water", {"", 1}}, {"ice", {"", 1}},  }},\
 
 };
 // Element emits other Elem
@@ -67,6 +66,15 @@ std::unordered_map< std::string, std::string > melt {
 
 std::unordered_map< std::string, std::string > evap_to {
     {"fire", "smoke"},
+};
+
+std::unordered_map< std::string, std::string > wet_to {
+    {"dirt", "mud"},
+    {"sand", "wet_sand"},
+};
+
+std::unordered_map< std::string, std::string > dry_to {
+    {"water", ""},
 };
 // Utility functions for state process
 float randf() {
