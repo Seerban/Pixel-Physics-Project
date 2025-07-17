@@ -15,28 +15,32 @@ element el(State state, const char* hex, float density = 1, const char* tags = "
     e.state = state;
     e.density = density;
     if( strchr(tags, 'b') ) e.burning = true;
+    if( strchr(tags, 'w') ) e.wet = true;
+    if( strchr(tags, 's') ) e.sponge = true;
+
+    if( strchr(tags, 'c') ) e.colorful = true;
+    if( strchr(tags, 'C') ) e.colorless = true;
+    if( strchr(tags, 'h') ) e.highlight = true;
+
     if( strchr(tags, 'e') ) e.evaporates = true;
     if( strchr(tags, 'f') ) e.fluid = true;
-    if( strchr(tags, 's') ) e.sponge = true;
-    if( strchr(tags, 'w') ) e.wet = true;
     return e;
 }
-
 // List of elements
 std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000", 0.5)},
     {"dirt",            el(SOLID,   "964B00", 2,    "s")},
-    {"glass",           el(SOLID,   "DDDDDD", 2)},
-    {"ice",             el(SOLID,   "AAAAFF", 2)},
+    {"glass",           el(SOLID,   "DDDDFF", 2,    "h")},
+    {"ice",             el(SOLID,   "7788FF", 2,    "h")},
     {"rock",            el(SOLID,   "555555", 2)},
     {"wet_sand",        el(SOLID,   "A28260", 2,    "s")},
 
     {"burning_gasoline",el(LIQUID,  "FF2222", 0.9,  "be")},
-    {"gasoline",        el(LIQUID,  "151555", 0.9)},
+    {"gasoline",        el(LIQUID,  "151555", 0.9,  "c")},
     {"water",           el(LIQUID,  "0E87CC", 1,    "wf")},
 
-    {"gravel",          el(DUST,    "999999", 2)},
-    {"sand",            el(DUST,    "C2B280", 2,    "s")},
+    {"gravel",          el(DUST,    "999999", 2,    "h")},
+    {"sand",            el(DUST,    "C2B280", 2,    "sh")},
     {"mud",             el(DUST,    "70543E", 2,    "s")},
 
     {"fire",            el(GAS,     "FF5A00", 0.3,  "be")},

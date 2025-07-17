@@ -27,6 +27,9 @@ struct element {
     State state;
     float density = 1; // reversed for gases
     bool burning = false; // is hot
+    bool colorful = false; // increases color variability
+    bool colorless = false; // removes color variability
+    bool highlight = false; // has white highlights
     bool evaporates = false; // evaporates into anothe relement
     bool fluid = false; // flows faster 
     bool sponge = false; // absorbs water

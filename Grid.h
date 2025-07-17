@@ -170,12 +170,7 @@ class Grid {
     static float getDensity(int x, int y) {
         return elem::list[grid[y][x].getElem()].density;
     }
-    static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
-        setChunkRegion(x/CHUNK, y/CHUNK);
-        grid[y][x] = Pixel(s);
-        if( elem::list[s].wet ) grid[y][x].setWet(1);
-        render(x, y);
-    }
+    
     static void setDebug(int x, int y, sf::Color c = sf::Color(0, 55, 0)) {
         debug_grid[y][x] = c;
         render(x, y);
@@ -193,11 +188,11 @@ class Grid {
         */
     }
     static void setChunkRegion(int x, int y) {
-        setChunk(x-1, y, true);
-        setChunk(x, y-1, true);
         setChunk(x, y, true);
-        setChunk(x, y+1, true);
+        setChunk(x-1, y, true);
         setChunk(x+1, y, true);
+        setChunk(x, y-1, true);
+        setChunk(x, y+1, true);
         if( grid[y][x].getState() == elem::GAS ) {
             setChunk(x+1, y-1, true);
             setChunk(x-1, y-1, true);
@@ -208,11 +203,19 @@ class Grid {
         }
     }
     static void render(int x, int y) {
+    
         image.setPixel(x, y, grid[y][x].getCol() + debug_grid[y][x] );
+    }
+    
+    static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
+        setChunkRegion(x/CHUNK, y/CHUNK);
+        grid[y][x] = Pixel(s);
+        if( elem::list[s].wet ) grid[y][x].setWet(1);
+        render(x, y);
     }
     static void switchPixel(int x, int y, int x2, int y2) {
         std::swap( grid[y][x], grid[y2][x2] );
-        setChunkRegion(x/CHUNK, y/CHUNK);
+        setChunkRegion(x2/CHUNK, y2/CHUNK);
         render(x,y);
         render(x2,y2);
     }
