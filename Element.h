@@ -25,6 +25,7 @@ void emitterProcess(int x, int y);
 struct element {
     sf::Color col;
     State state;
+    float density = 1;
     bool burning = false;
     bool evaporates = false;
     bool fluid = false;
@@ -38,4 +39,5 @@ extern std::unordered_map< std::string, element > list;
 extern std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction;
 extern std::unordered_map< std::string, std::string > emits;
 extern std::unordered_map< std::string, std::string > melt;
+extern std::unordered_map< std::string, std::string > evap_to;
 }

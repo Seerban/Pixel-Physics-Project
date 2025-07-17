@@ -7,12 +7,13 @@
 
 namespace elem {
 
-element el(State state, const char* hex, const char* tags = "") {
+element el(State state, const char* hex, float density = 1, const char* tags = "") {
     element e;
     int r, g, b;
     sscanf(hex, "%02x%02x%02x", &r, &g, &b);
     e.col = sf::Color(r,g,b);
     e.state = state;
+    e.density = density;
     if( strchr(tags, 'b') ) e.burning = true;
     if( strchr(tags, 'e') ) e.evaporates = true;
     if( strchr(tags, 'f') ) e.fluid = true;
@@ -21,26 +22,35 @@ element el(State state, const char* hex, const char* tags = "") {
 
 // List of elements
 std::unordered_map< std::string, element > list {
-    {"",                el(SOLID,   "000000")},
-    {"dirt",            el(SOLID,   "964B00")},
-    {"glass",           el(SOLID,   "DDDDDD")},
-    {"ice",             el(SOLID,   "D6EAFF")},
+    {"",                el(SOLID,   "000000", 0.5)},
+    {"dirt",            el(SOLID,   "964B00", 2)},
+    {"glass",           el(SOLID,   "DDDDDD", 2)},
+    {"ice",             el(SOLID,   "AAAAFF", 2)},
+    {"rock",            el(SOLID,   "555555", 2)},
+    {"wet_sand",        el(SOLID,   "A28260", 2)},
 
-    {"burning_gasoline",el(LIQUID,  "FF2222", "be")},
-    {"gasoline",        el(LIQUID,  "151555")},
-    {"water",           el(LIQUID,  "0E87CC", "f")},
+    {"burning_gasoline",el(LIQUID,  "FF2222", 0.5,  "be")},
+    {"gasoline",        el(LIQUID,  "151555", 0.5)},
+    {"water",           el(LIQUID,  "0E87CC", 1,    "f")},
 
-    {"sand",            el(DUST,    "C2B280")},
+    {"gravel",          el(DUST,    "999999", 2)},
+    {"sand",            el(DUST,    "C2B280", 2)},
+    {"mud",             el(DUST,    "70543E", 2)},
 
-    {"fire",            el(GAS,     "FF5A00", "be")},
-    {"steam",           el(GAS,     "888888", "e")},
+    {"fire",            el(GAS,     "FF5A00", 0.1, "be")},
+    {"smoke",           el(GAS,     "333333", 0.2, "e")},
+    {"steam",           el(GAS,     "888888", 0.3, "e")},
 
-    {"fire_source",     el(EMITTER, "FF0000", "be")},
-    {"water_source",    el(EMITTER, "0000FF")},
+    {"fire_source",     el(EMITTER, "FF5000", 1, "b")},
+    {"water_source",    el(EMITTER, "0080C0", 1)},
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
+    {"dirt",    { {"water", {"mud", 0.5}}, }},
     {"fire",    { {"water", {"", 1}}, {"ice", {"", 1}},  }},
+    {"sand",    { {"water", {"wet_sand", 1}}, }},
+    {"water",   { {"dirt",  {"", 1}}, }},
+
 };
 // Element emits other Elem
 std::unordered_map< std::string, std::string > emits {
@@ -53,6 +63,10 @@ std::unordered_map< std::string, std::string > melt {
     {"ice",     "water"},
     {"sand",    "glass"},
     {"water",   "steam"},
+};
+
+std::unordered_map< std::string, std::string > evap_to {
+    {"fire", "smoke"},
 };
 // Utility functions for state process
 float randf() {
@@ -74,15 +88,19 @@ void tryPlace(int x, int y, std::string element) {
 // Movement process for each state
 // returns 1 if erased/transformed
 int universalProcess(int x, int y) {
-    if( list[Grid::getElem(x, y)].evaporates && randf() < 0.1 ) {
-        Grid::setPixel(x, y, "");
+    if( list[Grid::getElem(x, y)].evaporates && randf() < 0.2 ) {
+        auto temp = evap_to.find( Grid::getElem(x, y) );
+        if( temp != evap_to.end() )
+            Grid::setPixel(x, y, temp->second);
+        else Grid::setPixel(x, y, "");
         return 1;
     }
     return 0;
 }
 
 void solidProcess(int x, int y) {
-    universalProcess(x, y);
+    if( universalProcess(x, y) ) return;
+    if( elem::tryMove(x, y, x, y+1) ) return;
 }
 void dustProcess(int x, int y) {
     if( universalProcess(x, y) ) return;

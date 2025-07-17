@@ -2,27 +2,29 @@
 #include "Grid.h"
 #include "array"
 
-using Brush = std::array< std::array< bool, 7 >, 7 >;
-
 int brush_size = 4;
 
 std::unordered_map<char, std::string> key_to_elem = {
     {'d', "dirt"},
     {'f', "fire"},
     {'F', "fire_source"},
+    {'g', "gasoline"},
+    {'G', "gravel"},
     {'i', "ice"},
+    {'m', "mud"},
+    {'r', "rock"},
     {'s', "sand"},
     {'S', "steam"},
-    {'g', "gasoline"},
     {'w', "water"},
+    {'W', "water_source"},
 };
 std::string selected_elem = "dirt";
 
 void brush(int x, int y, bool erase=false) {
     for(int i = -brush_size; i <= brush_size; ++i)
         for(int j = -brush_size; j <= brush_size; ++j)
-            if( i*i+j*j<0.75*brush_size*brush_size && Grid::inBounds(y+i, x+j))
-                if( !erase ) Grid::setPixel(x+j, y+i, selected_elem);
+            if( i*i+j*j<0.75*brush_size*brush_size && Grid::inBounds(x+j, y+i))
+                if( !erase ) { if(Grid::isEmpty(x+j, y+i) ) Grid::setPixel(x+j, y+i, selected_elem); }
                 else Grid::setPixel(x+j, y+i, "");
 }
 

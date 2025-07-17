@@ -12,6 +12,7 @@ class Pixel {
     sf::Color col;
     elem::State state;
     bool processed;
+    float wet = 0;
 public:
     // CONSTRUCTORS
     Pixel() : Pixel("") {}
@@ -24,6 +25,7 @@ public:
         col = p.col;
         state = p.state;
         processed = p.processed;
+        wet = p.wet;
         return *this;
     }
     

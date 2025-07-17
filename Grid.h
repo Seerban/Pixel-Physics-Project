@@ -147,7 +147,7 @@ class Grid {
         return grid[y][x].getElem();
     }
     static float getDensity(int x, int y) {
-        return grid[y][x].getState();
+        return elem::list[grid[y][x].getElem()].density;
     }
     static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
         setChunkRegion(x/8, y/8);
@@ -169,15 +169,15 @@ class Grid {
         //        setDebug(i, j, c);
     }
     static void setChunkRegion(int x, int y) {
-        setChunk(x-1, y-1, true);
+        //setChunk(x-1, y-1, true);
         setChunk(x-1, y, true);
-        setChunk(x-1, y+1, true);
+        //setChunk(x-1, y+1, true);
         setChunk(x, y-1, true);
         setChunk(x, y, true);
         setChunk(x, y+1, true);
-        setChunk(x+1, y-1, true);
+        //setChunk(x+1, y-1, true);
         setChunk(x+1, y, true);
-        setChunk(x+1, y+1, true);
+        //setChunk(x+1, y+1, true);
     }
     static void render(int x, int y) {
         image.setPixel(x, y, grid[y][x].getCol() + debug_grid[y][x] );
