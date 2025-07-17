@@ -20,15 +20,14 @@ element el(State state, const char* hex, const char* tags = "") {
 }
 
 // List of elements
-// tags: b - burning, e - evaporates, f - fluider
 std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000")},
     {"dirt",            el(SOLID,   "964B00")},
     {"glass",           el(SOLID,   "DDDDDD")},
     {"ice",             el(SOLID,   "D6EAFF")},
 
-    {"burning_fuel",    el(LIQUID,  "FF2222", "be")},
-    {"fuel",            el(LIQUID,  "151555")},
+    {"burning_gasoline",el(LIQUID,  "FF2222", "be")},
+    {"gasoline",        el(LIQUID,  "151555")},
     {"water",           el(LIQUID,  "0E87CC", "f")},
 
     {"sand",            el(DUST,    "C2B280")},
@@ -41,7 +40,7 @@ std::unordered_map< std::string, element > list {
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
-    {"fire",    { {"water", {"", 1}}, }},
+    {"fire",    { {"water", {"", 1}}, {"ice", {"", 1}},  }},
 };
 // Element emits other Elem
 std::unordered_map< std::string, std::string > emits {
@@ -50,7 +49,7 @@ std::unordered_map< std::string, std::string > emits {
 };
 // reaction with burning element
 std::unordered_map< std::string, std::string > melt {
-    {"fuel",    "burning_fuel"},
+    {"gasoline",    "burning_gasoline"},
     {"ice",     "water"},
     {"sand",    "glass"},
     {"water",   "steam"},
@@ -60,7 +59,7 @@ float randf() {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 int randomIncrement() {
-    return ( random() % 2 == 0 ) ? 1 : -1;
+    return ( rand() % 2 == 0 ) ? 1 : -1;
 }
 bool tryMove(int x, int y, int x2, int y2, bool gas = false) {
     if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) || Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
@@ -83,8 +82,7 @@ int universalProcess(int x, int y) {
 }
 
 void solidProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
-    return;
+    universalProcess(x, y);
 }
 void dustProcess(int x, int y) {
     if( universalProcess(x, y) ) return;
@@ -100,11 +98,17 @@ void liquidProcess(int x, int y) {
     if( elem::tryMove(x, y, x+incr, y+1) ) return;
     if( elem::tryMove(x, y, x-incr, y+1) ) return;
     if( elem::tryMove(x, y, x+incr, y) ) {
-        if( elem::list[ Grid::getElem(x+incr, y) ].fluid ) elem::tryMove(x+incr, y, x+2*incr, y);
+        if( elem::list[ Grid::getElem(x+incr, y) ].fluid ) {
+            if( elem::tryMove(x+incr, y, x+2*incr, y+1) ) return;
+            if( elem::tryMove(x+incr, y, x+2*incr, y) ) return;
+        }
         return;
     }
     if( elem::tryMove(x, y, x-incr, y) ) {
-        if( elem::list[ Grid::getElem(x-incr, y) ].fluid ) elem::tryMove(x-incr, y, x-2*incr, y);
+        if( elem::list[ Grid::getElem(x-incr, y) ].fluid ) {
+            if( elem::tryMove(x-incr, y, x-2*incr, y+1) ) return;
+            if( elem::tryMove(x-incr, y, x-2*incr, y) ) return;
+        }
         return;
     }
 }
@@ -120,7 +124,7 @@ void gasProcess(int x, int y) {
     if( elem::tryMove(x, y, x+incr, y-1) ) return;
     if( elem::tryMove(x, y, x-incr, y-1) ) return;
     if( elem::tryMove(x, y, x+incr, y) ) return;
-    if( elem::tryMove(x, y, x+incr, y) ) return;
+    if( elem::tryMove(x, y, x-incr, y) ) return;
 }
 void emitterProcess(int x, int y) {
     if( universalProcess(x, y) ) return;

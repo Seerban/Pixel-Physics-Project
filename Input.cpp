@@ -1,65 +1,29 @@
+#include <unordered_map>
 #include "Grid.h"
 #include "array"
-#include "unordered_map"
 
 using Brush = std::array< std::array< bool, 7 >, 7 >;
 
-Brush tiny_brush {{
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-}};
-Brush small_brush {{
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 1, 1, 1, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-}};
-Brush med_brush {{
-    {{0, 0, 0, 0, 0, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 1, 1, 1, 0, 0,}},
-    {{0, 1, 1, 1, 1, 1, 0,}},
-    {{0, 0, 1, 1, 1, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 0, 0, 0, 0, 0,}},
-}};
-Brush big_brush {{
-    {{0, 0, 0, 1, 0, 0, 0,}},
-    {{0, 0, 1, 1, 1, 0, 0,}},
-    {{0, 1, 1, 1, 1, 1, 0,}},
-    {{1, 1, 1, 1, 1, 1, 1,}},
-    {{0, 1, 1, 1, 1, 1, 0,}},
-    {{0, 0, 1, 1, 1, 0, 0,}},
-    {{0, 0, 0, 1, 0, 0, 0,}},
-}};
-Brush brushes[] { tiny_brush, small_brush, med_brush, big_brush };
-unsigned int selected_brush = 1;
+int brush_size = 4;
 
 std::unordered_map<char, std::string> key_to_elem = {
     {'d', "dirt"},
-    {'w', "water"},
     {'f', "fire"},
-    {'F', "fuel"},
+    {'F', "fire_source"},
     {'i', "ice"},
     {'s', "sand"},
     {'S', "steam"},
+    {'g', "gasoline"},
+    {'w', "water"},
 };
 std::string selected_elem = "dirt";
 
 void brush(int x, int y, bool erase=false) {
-    for( int i = 0; i < 7; ++i)
-        for( int j = 0; j < 7; ++j)
-            if( brushes[selected_brush][i][j] && Grid::inBounds(x+j-3, y+i-3) )
-                if( !erase ) Grid::setPixel(x+j-3, y+i-3, selected_elem);
-                else Grid::setPixel(x+j-3, y+i-3, "");
+    for(int i = -brush_size; i <= brush_size; ++i)
+        for(int j = -brush_size; j <= brush_size; ++j)
+            if( i*i+j*j<0.75*brush_size*brush_size && Grid::inBounds(y+i, x+j))
+                if( !erase ) Grid::setPixel(x+j, y+i, selected_elem);
+                else Grid::setPixel(x+j, y+i, "");
 }
 
 void Grid::handleInput() {
@@ -84,9 +48,9 @@ void Grid::handleInput() {
         if (event.type == sf::Event::KeyPressed) {
             int key = int(event.key.code + 97);
             // 124 is '0' because of the added value for letter chars
-            if(key >= 124 && key <= 127) {
-                selected_brush = key - 124;
-                std::cout<<"selected brush size "<< selected_brush << std::endl;
+            if(key >= 124 && key <= 133) {
+                brush_size = key - 123;
+                //std::cout<<"selected brush size "<< brush_size << std::endl;
                 return;
             }
             // capitalize if shift
@@ -96,7 +60,7 @@ void Grid::handleInput() {
             auto it = key_to_elem.find(key);
             bool found = it != key_to_elem.end();
             if( found ) {
-                std::cout<< "selected "<< key_to_elem[key] << std::endl;
+                //std::cout<< "selected "<< key_to_elem[key] << std::endl;
                 selected_elem = key_to_elem[key];
             }
         }

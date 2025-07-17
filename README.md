@@ -1,4 +1,4 @@
 # Pixel Physics Project
-Simple project to practice my C++
+Simple project with C++ and SFML
 
-SFML Dependency
+Plan to add video demo

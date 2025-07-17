@@ -10,6 +10,8 @@
 
 float randf();
 
+extern std::unordered_map<char, std::string> key_to_elem;
+
 class Grid {
     static int size; // size of grid on both axis
     static int scale; // scale multiplier of window size
@@ -55,17 +57,7 @@ class Grid {
         }
     }
     void mainProcess() {
-        // FPS DEBUGGING
-        using clock = std::chrono::steady_clock;
-        static auto last_time = clock::now();
-
-        auto now = clock::now();
-        std::chrono::duration<double> elapsed = now - last_time;
-        last_time = now;
-
-        double fps = 1.0 / elapsed.count();
-        std::cout << "FPS: " << fps << std::endl;
-        // START OF FUNCTION
+        //fps();
         even_state = !even_state;
         //set all to unprocessed
         std::vector<std::vector<bool>> old_chunks = active_chunks;
@@ -74,25 +66,31 @@ class Grid {
                 grid[i][j].setProcessed(false);
         for(int i = 0; i < size/8; ++i)
             for(int j = 0; j < size/8; ++j)
-                if( active_chunks[j][i] ) setChunk(i, j, false);
+                if( active_chunks[j][i] ) setChunk(i, j, false); // if any element updates the chunk it will be activated
         //main loop
         for(int i = size/8-1; i >= 0; --i)
             for(int j=0; j < size/8; ++j)
                 if( old_chunks[i][j] ) {
                     int x2 = j*8, to=j*8+8, incr=1;
                     if( even_state ) {x2 = j*8+7; to=j*8-1; incr = -1; }
-
                     for( int y=i*8+7; y>=i*8; --y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( grid[y][x].getState() != elem::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() != elem::GAS && !grid[y][x].getProcessed() ) {
                                 grid[y][x].setProcessed(true);
                                 // movement utility functions defined in grid.cp
                                 reactionProcess(x, y);
                                 (stateProcess[ grid[y][x].getState() ])(x, y);
                             }
+                }
+        //gases loop
+        for(int i = 0; i < size/8; ++i)
+            for(int j=0; j < size/8; ++j)
+                if( old_chunks[i][j] ) {
+                    int x2 = j*8, to=j*8+8, incr=1;
+                    if( even_state ) {x2 = j*8+7; to=j*8-1; incr = -1; }
                     for( int y=i*8; y<i*8+8; ++y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( grid[y][x].getState() == elem::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() == elem::GAS && !grid[y][x].getProcessed() ) {
                                 grid[y][x].setProcessed(true);
                                 // movement utility functions defined in grid.cp
                                 reactionProcess(x, y);
@@ -101,16 +99,6 @@ class Grid {
                 }
     }
     void mainProcessOLD() {
-        // FPS DEBUGGING
-        using clock = std::chrono::steady_clock;
-        static auto last_time = clock::now();
-
-        auto now = clock::now();
-        std::chrono::duration<double> elapsed = now - last_time;
-        last_time = now;
-
-        double fps = 1.0 / elapsed.count();
-        std::cout << "FPS: " << fps << std::endl;
         // alternate left-to-right every frame
         int j, fin, incr;
         if( even_state ) { j = 0; fin = size; incr = 1; }
@@ -204,23 +192,35 @@ class Grid {
         if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
         std::string elem1 = grid[y][x].getElem();
         std::string elem2 = grid[y2][x2].getElem();
+        if( elem1 == elem2 ) return;
         auto it = elem::reaction[elem1].find( elem2 );
+        
+        bool destroyed = false;
         // check if should melt
         if( elem::list[elem2].burning && elem::melt.find(elem1) != elem::melt.end() ) {
             setPixel(x, y, elem::melt[elem1] );
-            return;
+            destroyed = true;
         }
         // check special interaction with neighbors
-        if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
+        if( !destroyed && it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
         setPixel(x, y, elem::reaction[elem1][elem2].first);
-        
-        //auto it2 = elem::reaction[elem2].find( elem1 );
-        //if( elem::list[elem1].burning && elem::melt.find(elem2) != elem::melt.end() ) {
-        //    setPixel(x, y, elem::melt[elem2] );
-        //    return;
-        //}
-        //if( it2 != elem::reaction[elem2].end() && elem::reaction[elem2][elem1].second ) {
-        //    setPixel(x, y, elem::reaction[elem2][elem1].first );
-        //}
+
+        auto it2 = elem::reaction[elem2].find( elem1 );
+        if( it2 != elem::reaction[elem2].end() && elem::reaction[elem2][elem1].second ) {
+            setPixel(x2, y2, elem::reaction[elem2][elem1].first );
+        }
+    }
+
+    // FPS DEBUGGING
+    static void fps() {
+        using clock = std::chrono::steady_clock;
+        static auto last_time = clock::now();
+
+        auto now = clock::now();
+        std::chrono::duration<double> elapsed = now - last_time;
+        last_time = now;
+
+        double fps = 1.0 / elapsed.count();
+        std::cout << "FPS: " << fps << std::endl;
     }
 };
