@@ -11,6 +11,7 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'g', "gasoline"},
     {'G', "gravel"},
     {'i', "ice"},
+    {'l', "lava"},
     {'m', "mud"},
     {'r', "rock"},
     {'s', "sand"},
@@ -24,8 +25,8 @@ void brush(int x, int y, bool erase=false) {
     for(int i = -brush_size; i <= brush_size; ++i)
         for(int j = -brush_size; j <= brush_size; ++j)
             if( i*i+j*j<0.75*brush_size*brush_size && Grid::inBounds(x+j, y+i))
-                if( !erase ) { if(Grid::isEmpty(x+j, y+i) ) Grid::setPixel(x+j, y+i, selected_elem); }
-                else Grid::setPixel(x+j, y+i, "");
+                if( !erase ) { if(Grid::isEmpty(x+j, y+i) ) Grid::setPixel(x+j, y+i, selected_elem, true); }
+                else Grid::setPixel(x+j, y+i, "", true);
 }
 
 void Grid::handleInput() {

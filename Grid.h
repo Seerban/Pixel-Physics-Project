@@ -83,6 +83,7 @@ class Grid {
                                 // movement utility functions defined in grid.cp
                                 reactionProcess(x, y);
                                 wetProcess(x, y);
+                                tempProcess(x, y);
                                 (stateProcess[ grid[y][x].getState() ])(x, y);
                             }
                 }
@@ -143,12 +144,26 @@ class Grid {
     void wetProcess(int x, int y) {
         float tempwet = grid[y][x].getWet();
         if( tempwet == 0 ) return;
-        if( tempwet >= 0.25 && elem::wet_to.find(grid[y][x].getElem()) != elem::wet_to.end() ) { setPixel(x, y, elem::wet_to.find(grid[y][x].getElem())->second ); grid[y][x].setWet(tempwet); return; }
-        if( tempwet <= 0.75 && elem::dry_to.find(grid[y][x].getElem()) != elem::dry_to.end() ) { setPixel(x, y, elem::dry_to.find(grid[y][x].getElem())->second ); return; }
+        // wet
+        if( tempwet >= 0.25 && elem::wet_to.find(grid[y][x].getElem()) != elem::wet_to.end() ) {
+            setPixel(x, y, elem::wet_to.find(grid[y][x].getElem())->second );
+            return;
+        }
+        // dry
+        if( tempwet <= 0.75 && grid[y][x].getElem() == "water" ) {
+            setPixel(x, y, "" );
+            return; 
+        }
+        if( tempwet <= 0.05  && elem::dry_to.find(grid[y][x].getElem()) != elem::dry_to.end()) {
+            setPixel(x, y, elem::dry_to.find(grid[y][x].getElem())->second );
+            return;
+        }
         int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
+
         for(int i = 0; i < 8; i+=2) {
-            if( !inBounds(y+incrs[i], x+incrs[i+1]) ) continue;
+            if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) continue;
             if( std::fabs( grid[y][x].getWet() - grid[y+incrs[i]][x+incrs[i+1]].getWet() ) < 0.01 ) continue;
+
             if( elem::list[ grid[y + incrs[i] ][x + incrs[i+1]].getElem() ].sponge ) {
                 float wetTemp = grid[y][x].getWet();
                 float wetTemp2 = grid[y+incrs[i]][x+incrs[i+1]].getWet();
@@ -156,6 +171,57 @@ class Grid {
                 grid[y][x].setWet( wetTemp*3/4 + wetTemp2/4 );
             }
         }
+    }
+    void tempProcess(int x, int y) {
+        int temp = grid[y][x].getTemp();
+        if( temp < 10 || temp > 40 ) setChunkRegion(x/CHUNK, y/CHUNK);
+        // freezes
+        if( temp < 0 && elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end()) {
+            setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
+            return;
+        }
+        // unfreeze
+        if( temp > 0 && elem::unfreeze.find(grid[y][x].getElem()) != elem::unfreeze.end()) {
+            setPixel(x, y, elem::unfreeze.find(grid[y][x].getElem())->second );
+            return;
+        }
+        //if( temp > 100 && grid[y][x].getWet() > 0 ) grid[y][x].setWet(0);
+        if( temp > 100 ) setWet(x, y, 0);
+        // melt
+        if( temp > 200  && elem::melt.find(grid[y][x].getElem()) != elem::melt.end() ) {
+            if( elem::list[ grid[y][x].getElem() ].flammable )
+                setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second , true);
+            else setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second );
+            return;
+        }
+        // stop burning
+        if( temp < 1000 && elem::list[ grid[y][x].getElem() ].burning ) {
+            if( elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end() ) {
+                setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
+            }
+            else setPixel(x, y, "");   
+            return;
+        }
+        // high melt point
+        if( temp > 1000 && elem::hardmelt.find( grid[y][x].getElem() ) != elem::hardmelt.end() ) {
+            setPixel(x, y, elem::hardmelt.find(grid[y][x].getElem())->second );
+            return;
+        }
+
+        int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
+
+        for(int i = 0; i < 8; i+=2) {
+                if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) {
+                    setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
+                    continue;
+                }
+                
+                double temp1 = grid[y][x].getTemp();
+                double temp2 = grid[y+incrs[i]][x+incrs[i+1]].getTemp();
+                grid[y+incrs[i]][x+incrs[i+1]].setTemp( temp1*0.2 + temp2*0.8 );
+                grid[y][x].setTemp( temp1*0.8 + temp2*0.2 );
+            }
+        setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
     }
     // pixel grid functions 
     static bool inBounds(int x, int y) {
@@ -178,7 +244,8 @@ class Grid {
     static void setChunk(int x, int y, bool b) {
         if( !inBounds(x*CHUNK+CHUNK-1, y*CHUNK+CHUNK-1) ) return;
         active_chunks[y][x] = b;
-        /* COLORIZES CHUNKS, HEAVY PERFORMANCE IMPACT
+        /*
+        //COLORIZES CHUNKS, HEAVY PERFORMANCE IMPACT
         sf::Color c = sf::Color(0, 0, 0);
         if( b ) c = sf::Color(0, 55, 0);
         // debug colors
@@ -203,15 +270,35 @@ class Grid {
         }
     }
     static void render(int x, int y) {
-    
-        image.setPixel(x, y, grid[y][x].getCol() + debug_grid[y][x] );
+        sf::Color heat = sf::Color(0, 0, 0);//sf::Color( getTemp(x, y) / 50, 0, 0 );
+        image.setPixel(x, y, grid[y][x].getCol() + heat + debug_grid[y][x] );
     }
     
-    static void setPixel(int x, int y, std::string s) { // not to be confused with window.setPixel
+    static void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
         setChunkRegion(x/CHUNK, y/CHUNK);
+        int oldtemp = getTemp(x, y);
+        float oldwet = getWet(x, y);
+        if( override ) { 
+            oldtemp = elem::list[ s ].temperature;
+            oldwet = 0;
+            if( elem::list[s].wet ) oldwet = 1;
+        }
         grid[y][x] = Pixel(s);
-        if( elem::list[s].wet ) grid[y][x].setWet(1);
+        grid[y][x].setTemp(oldtemp);
+        grid[y][x].setWet(oldwet);
         render(x, y);
+    }
+    static double getTemp(int x, int y) {
+        return grid[y][x].getTemp();
+    }
+    static void setTemp(int x, int y, int val) {
+        grid[y][x].setTemp(val);
+    }
+    static float getWet(int x, int y) {
+        return grid[y][x].getWet();
+    }
+    static void setWet(int x, int y, int val) {
+        grid[y][x].setWet(val);
     }
     static void switchPixel(int x, int y, int x2, int y2) {
         std::swap( grid[y][x], grid[y2][x2] );
@@ -226,14 +313,8 @@ class Grid {
         if( elem1 == elem2 ) return;
         auto it = elem::reaction[elem1].find( elem2 );
         
-        bool destroyed = false;
-        // check if should melt
-        if( elem::list[elem2].burning && elem::melt.find(elem1) != elem::melt.end() ) {
-            setPixel(x, y, elem::melt[elem1] );
-            destroyed = true;
-        }
         // check special interaction with neighbors
-        if( !destroyed && it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
+        if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
         setPixel(x, y, elem::reaction[elem1][elem2].first);
 
         auto it2 = elem::reaction[elem2].find( elem1 );

@@ -9,7 +9,8 @@ class Pixel {
     sf::Color col;
     elem::State state;
     bool processed;
-    float wet = 0;
+    float wet = 0; // humidity
+    double temp = 30; // assumed room temperature
 public:
     // CONSTRUCTORS
     Pixel() : Pixel("") {}
@@ -23,6 +24,7 @@ public:
         state = p.state;
         processed = p.processed;
         wet = p.wet;
+        temp = p.temp;
         return *this;
     }
     
@@ -37,6 +39,8 @@ public:
     void setProcessed(bool b) { this->processed = b; }
     float getWet() { return this->wet; }
     void setWet(float f) { this->wet = f; }
+    double getTemp() { return this->temp; }
+    void setTemp(double t) { this->temp = t; }
     // Color randomizer
     sf::Color randomize_col(sf::Color col) {
         // random col variation

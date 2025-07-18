@@ -14,7 +14,10 @@ element el(State state, const char* hex, float density = 1, const char* tags = "
     e.col = sf::Color(r,g,b);
     e.state = state;
     e.density = density;
-    if( strchr(tags, 'b') ) e.burning = true;
+    if( strchr(tags, 'b') ) { e.burning = true; e.temperature += 1500; }
+    if( strchr(tags, 'B') ) { e.burning = true; e.temperature += 2500; }
+    if( strchr(tags, 'F') ) { e.temperature -= 200; }
+    if( strchr(tags, 'E') ) { e.flammable = true; }
     if( strchr(tags, 'w') ) e.wet = true;
     if( strchr(tags, 's') ) e.sponge = true;
 
@@ -31,29 +34,29 @@ std::unordered_map< std::string, element > list {
     {"",                el(SOLID,   "000000", 0.5)},
     {"dirt",            el(SOLID,   "964B00", 2,    "s")},
     {"glass",           el(SOLID,   "DDDDFF", 2,    "h")},
-    {"ice",             el(SOLID,   "7788FF", 2,    "h")},
+    {"ice",             el(SOLID,   "7788FF", 2,    "hF")},
+    {"obsidian",        el(SOLID,   "221045", 2)},
     {"rock",            el(SOLID,   "555555", 2)},
     {"wet_sand",        el(SOLID,   "A28260", 2,    "s")},
 
     {"burning_gasoline",el(LIQUID,  "FF2222", 0.9,  "be")},
-    {"gasoline",        el(LIQUID,  "151555", 0.9,  "c")},
+    {"gasoline",        el(LIQUID,  "1510555", 0.9, "cE")},
+    {"lava",            el(LIQUID,  "DD3505", 2,    "B")},
     {"water",           el(LIQUID,  "0E87CC", 1,    "wf")},
 
     {"gravel",          el(DUST,    "999999", 2,    "h")},
-    {"sand",            el(DUST,    "C2B280", 2,    "sh")},
+    {"sand",            el(DUST,    "C2B280", 2,    "smh")},
     {"mud",             el(DUST,    "70543E", 2,    "s")},
 
     {"fire",            el(GAS,     "FF5A00", 0.3,  "be")},
     {"smoke",           el(GAS,     "333333", 0.2,  "e")},
     {"steam",           el(GAS,     "888888", 0.1,  "e")},
 
-    {"fire_source",     el(EMITTER, "FF5A00", 1,    "b")},
-    {"water_source",    el(EMITTER, "0E87CC", 1)},
+    {"fire_source",     el(EMITTER, "FF5A00", 10,   "b")},
+    {"water_source",    el(EMITTER, "0E87CC", 10)},
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
-    {"fire",    { {"water", {"", 1}}, {"ice", {"", 1}},  }},\
-
 };
 // Element emits other Elem
 std::unordered_map< std::string, std::string > emits {
@@ -63,9 +66,12 @@ std::unordered_map< std::string, std::string > emits {
 // reaction with burning element
 std::unordered_map< std::string, std::string > melt {
     {"gasoline",    "burning_gasoline"},
-    {"ice",     "water"},
     {"sand",    "glass"},
     {"water",   "steam"},
+};
+
+std::unordered_map< std::string, std::string > hardmelt {
+    {"obsidian", "lava"},
 };
 
 std::unordered_map< std::string, std::string > evap_to {
@@ -78,7 +84,18 @@ std::unordered_map< std::string, std::string > wet_to {
 };
 
 std::unordered_map< std::string, std::string > dry_to {
-    {"water", ""},
+    {"water", ""}, // dries in wet process, others dry in temp process
+    {"mud", "dirt"},
+    {"wet_sand", "sand"},
+};
+
+std::unordered_map< std::string, std::string > freeze {
+    {"lava", "obsidian"},
+    {"water", "ice"},
+};
+
+std::unordered_map< std::string, std::string > unfreeze {
+    {"ice", "water"},
 };
 // Utility functions for state process
 float randf() {
@@ -86,6 +103,11 @@ float randf() {
 }
 int randomIncrement() {
     return ( rand() % 2 == 0 ) ? 1 : -1;
+}
+int intStep(int n, int m, int step) {
+    if (n < m && m - n > step) return n + step;
+    if (n > m && n - m > step) return n - step; 
+    return m;
 }
 bool tryMove(int x, int y, int x2, int y2, bool gas = false) {
     if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) || Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
@@ -100,7 +122,7 @@ void tryPlace(int x, int y, std::string element) {
 // Movement process for each state
 // returns 1 if erased/transformed
 int universalProcess(int x, int y) {
-    if( list[Grid::getElem(x, y)].evaporates && randf() < 0.2 ) {
+    if( list[Grid::getElem(x, y)].evaporates && randf() < 0.1 ) {
         auto temp = evap_to.find( Grid::getElem(x, y) );
         if( temp != evap_to.end() )
             Grid::setPixel(x, y, temp->second);
@@ -145,11 +167,14 @@ void liquidProcess(int x, int y) {
 void gasProcess(int x, int y) {
     if( universalProcess(x, y) ) return;
     int incr = elem::randomIncrement();
-    if( randf() < 0.85 )
+    if( randf() < 0.8 )
         if( elem::tryMove(x, y, x, y-1) ) return;
-    else {
+    else if( randf() < 0.5 ) {
         if( elem::tryMove(x, y, x+incr, y-1) ) return;
         if( elem::tryMove(x, y, x-incr, y-1) ) return;    
+    } else {
+        if( elem::tryMove(x, y, x+incr, y) ) return;
+        if( elem::tryMove(x, y, x-incr, y) ) return;    
     }
     if( elem::tryMove(x, y, x+incr, y-1) ) return;
     if( elem::tryMove(x, y, x-incr, y-1) ) return;

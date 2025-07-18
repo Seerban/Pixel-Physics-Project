@@ -1,11 +1,12 @@
 #include "Grid.h"
 
-const int SIZE = 80; //multiple of 8
+const int SIZE = 80; //multiple of CHUNK size in grid.h
 const int SCALE = 6;
 const int FPS = 30;
 
 void show_controls() {
-    std::cout<<"1-9 - Brush Size\n";
+    std::cout<<"-------- KEYS --------"<<std::endl;
+    std::cout<<"Nums - Brush Size\n";
     std::vector< std::pair< char, std::string > > list;
     for(auto it=key_to_elem.begin(); it!=key_to_elem.end(); ++it)
         list.emplace_back( it->first, it->second );
