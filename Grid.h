@@ -6,6 +6,7 @@
 #include <utility>
 #include <cmath> // fabs
 #include <chrono> // debug fps info
+#include <string>
 #include "Element.h"
 #include "Pixel.h"
 
@@ -28,6 +29,11 @@ class Grid {
     static sf::Texture texture;
     static sf::Sprite sprite;
     static sf::RenderWindow window;
+
+    sf::Font font;
+    static sf::Text cornerText;
+    static sf::Text cornerText2;
+
     static std::vector<void(*)(int,int)> stateProcess; // inititalized in element.cpp
     public:
     // constructors
@@ -36,14 +42,27 @@ class Grid {
             this->size = size;
             this->scale = scale;
             window.create( sf::VideoMode(size*scale, size*scale), "Grid" );
-            grid.resize(size, std::vector<Pixel>(size));
-            debug_grid.resize(size, std::vector<sf::Color>(size));
-            active_chunks.resize(size/CHUNK, std::vector<bool>(size/CHUNK));
+            window.setFramerateLimit( fps );
+            
             image.create(size, size, sf::Color::Black);
             texture.loadFromImage(image);
             sprite.setTexture(texture);
             sprite.setScale(scale, scale);
-            window.setFramerateLimit( fps );
+            
+            grid.resize(size, std::vector<Pixel>(size));
+            debug_grid.resize(size, std::vector<sf::Color>(size));
+            active_chunks.resize(size/CHUNK, std::vector<bool>(size/CHUNK));
+
+            font.loadFromFile( "Roboto-Bold.ttf" );
+            cornerText.setFont(font);
+            cornerText.setCharacterSize(12);
+            cornerText.setFillColor( sf::Color(255, 255, 255) );
+            cornerText.setString( "Hello World" );
+            cornerText2.setFont(font);
+            cornerText2.setCharacterSize(12);
+            cornerText2.setFillColor( sf::Color(255, 255, 255) );
+            cornerText2.setString( "abcdef");
+            cornerText2.setPosition( sf::Vector2f(0, size*scale - 12) );
         }
     // main process functions
     void start() {
@@ -52,10 +71,15 @@ class Grid {
             handleInput();
 
             mainProcess();
-            texture.update(image); // should be replace to update only 1 pixel but newest sfml incompatible with my system
-
+            texture.update(image);
             window.clear();
             window.draw(sprite);
+
+            updateText();
+
+            window.draw(cornerText);
+            window.draw(cornerText2);
+
             window.display();
         }
     }
@@ -79,12 +103,7 @@ class Grid {
                     for( int y=i*CHUNK+CHUNK-1; y>=i*CHUNK; --y)
                         for( int x=x2; x!=to; x+=incr)
                             if( !isEmpty(x, y) && grid[y][x].getState() != elem::GAS && !grid[y][x].getProcessed() ) {
-                                grid[y][x].setProcessed(true);
-                                // movement utility functions defined in grid.cp
-                                reactionProcess(x, y);
-                                wetProcess(x, y);
-                                tempProcess(x, y);
-                                (stateProcess[ grid[y][x].getState() ])(x, y);
+                                processPixel(x, y);
                             }
                 }
         //gases loop
@@ -96,43 +115,18 @@ class Grid {
                     for( int y=i*CHUNK; y<i*CHUNK+CHUNK; ++y)
                         for( int x=x2; x!=to; x+=incr)
                             if( !isEmpty(x, y) && grid[y][x].getState() == elem::GAS && !grid[y][x].getProcessed() ) {
-                                grid[y][x].setProcessed(true);
-                                // movement utility functions defined in grid.cp
-                                reactionProcess(x, y);
-                                (stateProcess[ grid[y][x].getState() ])(x, y);
+                                processPixel(x, y);
                             }
                 }
     }
-    void mainProcessOLD() {
-        // alternate left-to-right every frame
-        int j, fin, incr;
-        if( even_state ) { j = 0; fin = size; incr = 1; }
-        else { j = size-1; fin = -1; incr = -1; }
-        even_state = !even_state;
-        // bottom-to-top loop for processing liquids/dusts
-        for(int i = size-1; i >= 0; --i) {
-            for( int j2 = j; j2 != fin; j2 += incr )
-                if( grid[i][j2].getState() != elem::GAS && !grid[i][j2].getProcessed() ) {
-                    grid[i][j2].setProcessed(true);
-                    // movement utility functions defined in grid.cpp
-                    reactionProcess(i, j2);
-                    (stateProcess[ grid[i][j2].getState() ])(j2, i);
-                }
-        }
-        // top-to-bottom loop for processing gas
-        for(int i = 0; i < size; ++i) {
-            for( int j2 = j; j2 != fin; j2 += incr )
-                if( grid[i][j2].getState() == elem::GAS && !grid[i][j2].getProcessed() ) {
-                    grid[i][j2].setProcessed(true);
-                    // movement utility functions defined in grid.cpp
-                    reactionProcess(i, j2);
-                    (stateProcess[ grid[i][j2].getState() ])(j2, i);
-                }
-        }
-
-        for(int i = 0; i < size; ++i)
-            for(int j = 0; j < size; ++j)
-                grid[i][j].setProcessed(false);
+    void processPixel(int x, int y) {
+        grid[y][x].setProcessed(true);
+        reactionProcess(x, y);
+        wetProcess(x, y);
+        tempProcess(x, y);
+        render(x, y);
+        // movement utility functions defined in grid.cpp
+        (stateProcess[ grid[y][x].getState() ])(x, y);
     }
     void handleInput(); // defined in input.h
     void reactionProcess(int x, int y) {
@@ -151,7 +145,7 @@ class Grid {
         }
         // dry
         if( tempwet <= 0.75 && grid[y][x].getElem() == "water" ) {
-            setPixel(x, y, "" );
+            setPixel(x, y, "", true);
             return; 
         }
         if( tempwet <= 0.05  && elem::dry_to.find(grid[y][x].getElem()) != elem::dry_to.end()) {
@@ -159,11 +153,11 @@ class Grid {
             return;
         }
         int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
-
+        
         for(int i = 0; i < 8; i+=2) {
             if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) continue;
             if( std::fabs( grid[y][x].getWet() - grid[y+incrs[i]][x+incrs[i+1]].getWet() ) < 0.01 ) continue;
-
+            
             if( elem::list[ grid[y + incrs[i] ][x + incrs[i+1]].getElem() ].sponge ) {
                 float wetTemp = grid[y][x].getWet();
                 float wetTemp2 = grid[y+incrs[i]][x+incrs[i+1]].getWet();
@@ -173,8 +167,9 @@ class Grid {
         }
     }
     void tempProcess(int x, int y) {
+        if( isEmpty(x, y) ) return;
         int temp = grid[y][x].getTemp();
-        if( temp < 10 || temp > 40 ) setChunkRegion(x/CHUNK, y/CHUNK);
+        if( temp != 30 ) setChunkRegion(x/CHUNK, y/CHUNK);
         // freezes
         if( temp < 0 && elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end()) {
             setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
@@ -195,11 +190,11 @@ class Grid {
             return;
         }
         // stop burning
-        if( temp < 1000 && elem::list[ grid[y][x].getElem() ].burning ) {
+        if( temp < 600 && elem::list[ grid[y][x].getElem() ].burning ) {
             if( elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end() ) {
                 setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
             }
-            else setPixel(x, y, "");   
+            else setPixel(x, y, "", true);   
             return;
         }
         // high melt point
@@ -212,7 +207,7 @@ class Grid {
 
         for(int i = 0; i < 8; i+=2) {
                 if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) {
-                    setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
+                    setTemp( x, y, elem::intStep( getTemp(x, y), 30, 3) );
                     continue;
                 }
                 
@@ -221,7 +216,7 @@ class Grid {
                 grid[y+incrs[i]][x+incrs[i+1]].setTemp( temp1*0.2 + temp2*0.8 );
                 grid[y][x].setTemp( temp1*0.8 + temp2*0.2 );
             }
-        setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
+        //setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
     }
     // pixel grid functions 
     static bool inBounds(int x, int y) {
@@ -270,8 +265,10 @@ class Grid {
         }
     }
     static void render(int x, int y) {
-        sf::Color heat = sf::Color(0, 0, 0);//sf::Color( getTemp(x, y) / 50, 0, 0 );
-        image.setPixel(x, y, grid[y][x].getCol() + heat + debug_grid[y][x] );
+        sf::Color col = grid[y][x].getCol();
+        int addR = getTemp(x, y) / 50;
+        col.r += std::min( 255-col.r, 12*addR );
+        image.setPixel(x, y, col + debug_grid[y][x] );
     }
     
     static void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
@@ -279,9 +276,8 @@ class Grid {
         int oldtemp = getTemp(x, y);
         float oldwet = getWet(x, y);
         if( override ) { 
-            oldtemp = elem::list[ s ].temperature;
-            oldwet = 0;
-            if( elem::list[s].wet ) oldwet = 1;
+            oldtemp = elem::list[s].temperature;
+            oldwet = elem::list[s].wet;
         }
         grid[y][x] = Pixel(s);
         grid[y][x].setTemp(oldtemp);
@@ -323,6 +319,18 @@ class Grid {
         }
     }
 
+    static void updateText() {
+        sf::Vector2i pos = sf::Vector2i(sf::Mouse::getPosition(window).x / scale, sf::Mouse::getPosition(window).y / scale);
+        if( inBounds(pos.x, pos.y) ) {
+            sf::Color col = grid[pos.y][pos.x].getCol();
+            cornerText.setFillColor( sf::Color( (col.r + 200)/2, (col.g + 200)/2, (col.b + 200)/2 ) );
+
+            int temp = grid[pos.y][pos.x].getTemp();
+
+            cornerText.setString( getElem(pos.x, pos.y) + '\n' + std::to_string(temp) + "C" );
+        }
+    }
+
     // FPS DEBUGGING
     static void fps() {
         using clock = std::chrono::steady_clock;
@@ -333,6 +341,6 @@ class Grid {
         last_time = now;
 
         float fps = 1.0 / elapsed.count();
-        std::cout<<"\rTPS: "<<int(fps)<<"    "<<std::flush;
+        cornerText2.setString( std::to_string( int(fps+0.5) ) + " TPS" );
     }
 };

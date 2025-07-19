@@ -14,11 +14,11 @@ element el(State state, const char* hex, float density = 1, const char* tags = "
     e.col = sf::Color(r,g,b);
     e.state = state;
     e.density = density;
-    if( strchr(tags, 'b') ) { e.burning = true; e.temperature += 1500; }
-    if( strchr(tags, 'B') ) { e.burning = true; e.temperature += 2500; }
-    if( strchr(tags, 'F') ) { e.temperature -= 200; }
-    if( strchr(tags, 'E') ) { e.flammable = true; }
-    if( strchr(tags, 'w') ) e.wet = true;
+    if( strchr(tags, 'b') ) { e.burning = true; e.temperature += 750; }
+    if( strchr(tags, 'B') ) { e.burning = true; e.temperature += 1500; }
+    if( strchr(tags, 'F') ) e.temperature -= 300;
+    if( strchr(tags, 'E') ) e.flammable = true;
+    if( strchr(tags, 'w') ) e.wet = 1;
     if( strchr(tags, 's') ) e.sponge = true;
 
     if( strchr(tags, 'c') ) e.colorful = true;
@@ -35,20 +35,20 @@ std::unordered_map< std::string, element > list {
     {"dirt",            el(SOLID,   "964B00", 2,    "s")},
     {"glass",           el(SOLID,   "DDDDFF", 2,    "h")},
     {"ice",             el(SOLID,   "7788FF", 2,    "hF")},
+    {"mud",             el(SOLID,   "70543E", 2,    "sw")},
     {"obsidian",        el(SOLID,   "221045", 2)},
     {"rock",            el(SOLID,   "555555", 2)},
     {"wet_sand",        el(SOLID,   "A28260", 2,    "s")},
 
-    {"burning_gasoline",el(LIQUID,  "FF2222", 0.9,  "be")},
+    {"burning_gasoline",el(LIQUID,  "FF2222", 0.9,  "b")},
     {"gasoline",        el(LIQUID,  "1510555", 0.9, "cE")},
     {"lava",            el(LIQUID,  "DD3505", 2,    "B")},
     {"water",           el(LIQUID,  "0E87CC", 1,    "wf")},
 
     {"gravel",          el(DUST,    "999999", 2,    "h")},
     {"sand",            el(DUST,    "C2B280", 2,    "smh")},
-    {"mud",             el(DUST,    "70543E", 2,    "s")},
 
-    {"fire",            el(GAS,     "FF5A00", 0.3,  "be")},
+    {"fire",            el(GAS,     "FF5A00", 0.3,  "b")},
     {"smoke",           el(GAS,     "333333", 0.2,  "e")},
     {"steam",           el(GAS,     "888888", 0.1,  "e")},
 
@@ -58,42 +58,44 @@ std::unordered_map< std::string, element > list {
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
 };
-// Element emits other Elem
+// Element turns air to elem
 std::unordered_map< std::string, std::string > emits {
     {"fire_source",     "fire"},
     {"water_source",    "water"},
 };
-// reaction with burning element
+// boiling temperature
 std::unordered_map< std::string, std::string > melt {
     {"gasoline",    "burning_gasoline"},
     {"sand",    "glass"},
     {"water",   "steam"},
 };
-
+// higher temperature melt
 std::unordered_map< std::string, std::string > hardmelt {
     {"obsidian", "lava"},
 };
-
+// if it's not in list, it will disappear
 std::unordered_map< std::string, std::string > evap_to {
-    {"fire", "smoke"},
+    
 };
-
+// if it has high humidity
 std::unordered_map< std::string, std::string > wet_to {
     {"dirt", "mud"},
     {"sand", "wet_sand"},
 };
-
+// if high temp will lose water
 std::unordered_map< std::string, std::string > dry_to {
     {"water", ""}, // dries in wet process, others dry in temp process
     {"mud", "dirt"},
     {"wet_sand", "sand"},
 };
-
+// below 0 temp
+// when burning process stops
 std::unordered_map< std::string, std::string > freeze {
     {"lava", "obsidian"},
+    {"fire", "smoke"},
     {"water", "ice"},
 };
-
+// above 0 temp
 std::unordered_map< std::string, std::string > unfreeze {
     {"ice", "water"},
 };
@@ -117,7 +119,7 @@ bool tryMove(int x, int y, int x2, int y2, bool gas = false) {
     return false;
 }
 void tryPlace(int x, int y, std::string element) {
-    if( Grid::inBounds(x, y) && Grid::isEmpty(x, y) ) Grid::setPixel(x, y, element);
+    if( Grid::inBounds(x, y) && Grid::isEmpty(x, y) ) Grid::setPixel(x, y, element, true);
 }
 // Movement process for each state
 // returns 1 if erased/transformed
@@ -126,7 +128,7 @@ int universalProcess(int x, int y) {
         auto temp = evap_to.find( Grid::getElem(x, y) );
         if( temp != evap_to.end() )
             Grid::setPixel(x, y, temp->second);
-        else Grid::setPixel(x, y, "");
+        else Grid::setPixel(x, y, "", true);
         return 1;
     }
     return 0;
