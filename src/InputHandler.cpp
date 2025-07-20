@@ -1,8 +1,4 @@
-#include <unordered_map>
-#include "Grid.h"
-#include "array"
-
-int brush_size = 4;
+#include "InputHandler.h"
 
 std::unordered_map<char, std::string> key_to_elem = {
     {'d', "dirt"},
@@ -20,17 +16,24 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'w', "water"},
     {'W', "water_source"},
 };
-std::string selected_elem = "dirt";
 
-void brush(Grid& g, int x, int y, bool erase=false) {
-    for(int i = -brush_size; i <= brush_size; ++i)
-        for(int j = -brush_size; j <= brush_size; ++j)
-            if( i*i+j*j<0.75*brush_size*brush_size && g.inBounds(x+j, y+i))
-                if( !erase ) { if(g.isEmpty(x+j, y+i) ) g.setPixel(x+j, y+i, selected_elem, true); }
-                else g.setPixel(x+j, y+i, "", true);
+InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {
+    this->size = size;
+    this->scale = scale;
+    this->window = &window;
+    this->g = &g;
+    this->brush_size = 5;
 }
 
-void Grid::handleInput() {
+void InputHandler::brush(int x, int y, bool erase) {
+    for(int i = -brush_size; i <= brush_size; ++i)
+        for(int j = -brush_size; j <= brush_size; ++j)
+            if( i*i+j*j<0.75*brush_size*brush_size && g->inBounds(x+j, y+i))
+                if( !erase ) { if(g->isEmpty(x+j, y+i) ) g->setPixel(x+j, y+i, selected_elem, true); }
+                else g->setPixel(x+j, y+i, "", true);
+}
+
+void InputHandler::process() {
     sf::Event event;
     while (window->pollEvent(event)) {
         // exit button
@@ -39,13 +42,13 @@ void Grid::handleInput() {
         // place elem event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             sf::Vector2i pos = sf::Mouse::getPosition(*window);
-            brush(*this, pos.x / scale, pos.y / scale);
+            brush(pos.x / scale, pos.y / scale);
             return;
         }
         // erase event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
             sf::Vector2i pos = sf::Mouse::getPosition(*window);
-            brush(*this, pos.x / scale, pos.y / scale, true);
+            brush(pos.x / scale, pos.y / scale, true);
             return;
         }
         // key to select element

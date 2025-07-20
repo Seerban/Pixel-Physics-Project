@@ -1,5 +1,6 @@
 #include "Grid.h"
-#include "ui.h"
+#include "UIHandler.h"
+#include "InputHandler.h"
 
 const int SIZE = 80; //multiple of CHUNK size in grid.h
 const int SCALE = 6;
@@ -21,17 +22,17 @@ int main() {
     //show_controls();
     Grid grid(SIZE, SCALE, FPS, image, window);
     UIHandler ui(SIZE, SCALE, window, grid);
+    InputHandler input(SIZE, SCALE, grid, window);
 
     while (window.isOpen()) {
-            grid.handleInput();
             grid.process();
+            input.process();
             
             texture.update(image);
             window.clear();
-            window.draw(sprite);
             
+            window.draw(sprite);
             ui.draw();
-            //grid.updateText();
 
             window.display();
         }
