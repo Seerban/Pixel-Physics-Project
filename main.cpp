@@ -16,7 +16,7 @@ void show_controls() {
 
 int main() {
 
-    show_controls();
+    //show_controls();
     Grid grid(SIZE, SCALE, FPS);
     grid.start();
 }

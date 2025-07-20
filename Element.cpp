@@ -8,12 +8,12 @@
 
 namespace elem {
 
-element el(State::State state, const char* hex, float density = 1, const char* tags = "") {
+element el(state::States elemstate, const char* hex, float density, const char* tags) {
     element e;
     int r, g, b;
     sscanf(hex, "%02x%02x%02x", &r, &g, &b);
     e.col = sf::Color(r,g,b);
-    e.state = state;
+    e.elemstate = elemstate;
     e.density = density;
     if( strchr(tags, 'b') ) { e.burning = true; e.temperature += 750; }
     if( strchr(tags, 'B') ) { e.burning = true; e.temperature += 1500; }
@@ -32,30 +32,30 @@ element el(State::State state, const char* hex, float density = 1, const char* t
 }
 // List of elements
 std::unordered_map< std::string, element > list {
-    {"",                el(State::SOLID,   "000000", 0.5)},
-    {"dirt",            el(State::SOLID,   "964B00", 2,    "s")},
-    {"glass",           el(State::SOLID,   "DDDDFF", 2,    "h")},
-    {"ice",             el(State::SOLID,   "7788FF", 2,    "hF")},
-    {"mud",             el(State::SOLID,   "70543E", 2,    "s")},
-    {"obsidian",        el(State::SOLID,   "221045", 2)},
-    {"rock",            el(State::SOLID,   "555555", 2)},
-    {"wet_sand",        el(State::SOLID,   "A28260", 2,    "s")},
+    {"",                el(state::SOLID,   "000000", 0.5,  "C")},
+    {"dirt",            el(state::SOLID,   "964B00", 2,    "s")},
+    {"glass",           el(state::SOLID,   "DDDDFF", 2,    "h")},
+    {"ice",             el(state::SOLID,   "7788FF", 2,    "hF")},
+    {"mud",             el(state::SOLID,   "70543E", 2,    "s")},
+    {"obsidian",        el(state::SOLID,   "221045", 2)},
+    {"rock",            el(state::SOLID,   "555555", 2)},
+    {"wet_sand",        el(state::SOLID,   "A28260", 2,    "s")},
 
-    {"burning_gasoline",el(State::LIQUID,  "FF2222", 0.9,  "b")},
-    {"gasoline",        el(State::LIQUID,  "1510555", 0.9, "cE")},
-    {"lava",            el(State::LIQUID,  "DD3505", 2,    "B")},
-    {"water",           el(State::LIQUID,  "0E87CC", 1,    "wf")},
+    {"burning_gasoline",el(state::LIQUID,  "FF2222", 0.9,  "b")},
+    {"gasoline",        el(state::LIQUID,  "151055", 0.9, "cE")},
+    {"lava",            el(state::LIQUID,  "DD3505", 2,    "B")},
+    {"water",           el(state::LIQUID,  "0E87CC", 1,    "wf")},
 
-    {"gravel",          el(State::DUST,    "999999", 2,    "h")},
-    {"sand",            el(State::DUST,    "C2B280", 2,    "smh")},
+    {"gravel",          el(state::DUST,    "999999", 2,    "h")},
+    {"sand",            el(state::DUST,    "C2B280", 2,    "smh")},
 
-    {"fire",            el(State::GAS,     "FF5A00", 0.3,  "b")},
-    {"plasma",          el(State::GAS,     "C321A5", 0.4,  "Bbch")},
-    {"smoke",           el(State::GAS,     "333333", 0.2,  "e")},
-    {"steam",           el(State::GAS,     "888888", 0.1,  "e")},
+    {"fire",            el(state::GAS,     "FF5A00", 0.3,  "b")},
+    {"plasma",          el(state::GAS,     "C321A5", 0.4,  "Bbch")},
+    {"smoke",           el(state::GAS,     "333333", 0.2,  "e")},
+    {"steam",           el(state::GAS,     "888888", 0.1,  "e")},
 
-    {"fire_source",     el(State::EMITTER, "FF5A00", 10,   "b")},
-    {"water_source",    el(State::EMITTER, "0E87CC", 10)},
+    {"fire_source",     el(state::EMITTER, "FF5A00", 10,   "b")},
+    {"water_source",    el(state::EMITTER, "0E87CC", 10)},
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction {
@@ -114,24 +114,6 @@ int intStep(int n, int m, int step) {
     if (n > m && n - m > step) return n - step; 
     return m;
 }
-bool tryMove(int x, int y, int x2, int y2, bool gas) {
-    if( Grid::inBounds(x2, y2) && ( Grid::isEmpty(x2, y2) || Grid::getDensity(x, y) > Grid::getDensity(x2, y2)) ) {
-        Grid::switchPixel(x, y, x2, y2);
-        return true;
-    }
-    return false;
-}
-void tryPlace(int x, int y, std::string element) {
-    if( Grid::inBounds(x, y) && Grid::isEmpty(x, y) ) Grid::setPixel(x, y, element, true);
-}
 // Movement process for each state
 // returns 1 if erased/transformed
 }
-//indexes from states
-std::vector<void(*)(int,int)> Grid::stateProcess = {
-    &State::gasProcess,
-    &State::liquidProcess,
-    &State::dustProcess,
-    &State::solidProcess,
-    &State::emitterProcess,
-};

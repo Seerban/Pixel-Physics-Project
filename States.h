@@ -1,8 +1,12 @@
 #pragma once
+#include <vector>
+#include <string>
 
-namespace State {
+class Grid;
 
-enum State {
+namespace state {
+
+enum States {
     GAS,
     LIQUID, 
     DUST, 
@@ -11,11 +15,16 @@ enum State {
 };
 
 // state processes
-int universalProcess(int x, int y);
-void solidProcess(int x, int y);
-void dustProcess(int x, int y);
-void liquidProcess(int x, int y);
-void gasProcess(int x, int y);
-void emitterProcess(int x, int y);
+int universalProcess(Grid &g, int x, int y);
+void solidProcess(Grid &g, int x, int y);
+void dustProcess(Grid &g, int x, int y);
+void liquidProcess(Grid &g, int x, int y);
+void gasProcess(Grid &g, int x, int y);
+void emitterProcess(Grid &g, int x, int y);
 
+extern std::vector<void(*)(Grid&,int,int)> stateProcess;
 }
+
+// utility functions for movement
+void tryPlace(Grid &g, int x, int y, std::string element);
+bool tryMove(Grid &g, int x, int y, int x2, int y2, bool gas = false);

@@ -22,12 +22,12 @@ std::unordered_map<char, std::string> key_to_elem = {
 };
 std::string selected_elem = "dirt";
 
-void brush(int x, int y, bool erase=false) {
+void brush(Grid& g, int x, int y, bool erase=false) {
     for(int i = -brush_size; i <= brush_size; ++i)
         for(int j = -brush_size; j <= brush_size; ++j)
-            if( i*i+j*j<0.75*brush_size*brush_size && Grid::inBounds(x+j, y+i))
-                if( !erase ) { if(Grid::isEmpty(x+j, y+i) ) Grid::setPixel(x+j, y+i, selected_elem, true); }
-                else Grid::setPixel(x+j, y+i, "", true);
+            if( i*i+j*j<0.75*brush_size*brush_size && g.inBounds(x+j, y+i))
+                if( !erase ) { if(g.isEmpty(x+j, y+i) ) g.setPixel(x+j, y+i, selected_elem, true); }
+                else g.setPixel(x+j, y+i, "", true);
 }
 
 void Grid::handleInput() {
@@ -39,13 +39,13 @@ void Grid::handleInput() {
         // place elem event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             sf::Vector2i pos = sf::Mouse::getPosition(window);
-            brush(pos.x / scale, pos.y / scale);
+            brush(*this, pos.x / scale, pos.y / scale);
             return;
         }
         // erase event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
             sf::Vector2i pos = sf::Mouse::getPosition(window);
-            brush(pos.x / scale, pos.y / scale, true);
+            brush(*this, pos.x / scale, pos.y / scale, true);
             return;
         }
         // key to select element

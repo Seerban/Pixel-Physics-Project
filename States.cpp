@@ -2,72 +2,90 @@
 #include "Element.h"
 #include "Grid.h"
 
-int State::universalProcess(int x, int y) {
-    if( elem::list[Grid::getElem(x, y)].evaporates && randf() < 0.1 ) {
-        auto temp = elem::evap_to.find( Grid::getElem(x, y) );
+bool tryMove(Grid &g, int x, int y, int x2, int y2, bool gas) {
+    if( g.inBounds(x2, y2) && ( g.isEmpty(x2, y2) || g.getDensity(x, y) > g.getDensity(x2, y2)) ) {
+        g.switchPixel(x, y, x2, y2);
+        return true;
+    }
+    return false;
+}
+void tryPlace(Grid &g, int x, int y, std::string element) {
+    if( g.inBounds(x, y) && g.isEmpty(x, y) ) g.setPixel(x, y, element, true);
+}
+
+int state::universalProcess(Grid &g, int x, int y) {
+    if( elem::list[g.getElem(x, y)].evaporates && randf() < 0.1 ) {
+        auto temp = elem::evap_to.find( g.getElem(x, y) );
         if( temp != elem::evap_to.end() )
-            Grid::setPixel(x, y, temp->second);
-        else Grid::setPixel(x, y, "", true);
+            g.setPixel(x, y, temp->second);
+        else g.setPixel(x, y, "", true);
         return 1;
     }
     return 0;
 }
-
-void State::solidProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
-    if( elem::tryMove(x, y, x, y+1) ) return;
+void state::solidProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
+    if( tryMove(g, x, y, x, y+1) ) return;
 }
-void State::dustProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
-    if( elem::tryMove(x, y, x, y+1) ) return;
+void state::dustProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
+    if( tryMove(g, x, y, x, y+1) ) return;
     int incr = elem::randomIncrement();
-    if( elem::tryMove(x, y, x+incr, y+1) ) return;
-    if( elem::tryMove(x, y, x-incr, y+1) ) return;
+    if( tryMove(g, x, y, x+incr, y+1) ) return;
+    if( tryMove(g, x, y, x-incr, y+1) ) return;
 }
-void State::liquidProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
-    if( elem::tryMove(x, y, x, y+1) ) return;
+void state::liquidProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
+    if( tryMove(g, x, y, x, y+1) ) return;
     int incr = elem::randomIncrement();
-    if( elem::tryMove(x, y, x+incr, y+1) ) return;
-    if( elem::tryMove(x, y, x-incr, y+1) ) return;
-    if( elem::tryMove(x, y, x+incr, y) ) {
-        if( elem::list[ Grid::getElem(x+incr, y) ].fluid ) {
-            if( elem::tryMove(x+incr, y, x+2*incr, y+1) ) return;
-            if( elem::tryMove(x+incr, y, x+2*incr, y) ) return;
+    if( tryMove(g, x, y, x+incr, y+1) ) return;
+    if( tryMove(g, x, y, x-incr, y+1) ) return;
+    if( tryMove(g, x, y, x+incr, y) ) {
+        if( elem::list[ g.getElem(x+incr, y) ].fluid ) {
+            if( tryMove(g, x+incr, y, x+2*incr, y+1) ) return;
+            if( tryMove(g, x+incr, y, x+2*incr, y) ) return;
         }
         return;
     }
-    if( elem::tryMove(x, y, x-incr, y) ) {
-        if( elem::list[ Grid::getElem(x-incr, y) ].fluid ) {
-            if( elem::tryMove(x-incr, y, x-2*incr, y+1) ) return;
-            if( elem::tryMove(x-incr, y, x-2*incr, y) ) return;
+    if( tryMove(g, x, y, x-incr, y) ) {
+        if( elem::list[ g.getElem(x-incr, y) ].fluid ) {
+            if( tryMove(g, x-incr, y, x-2*incr, y+1) ) return;
+            if( tryMove(g, x-incr, y, x-2*incr, y) ) return;
         }
         return;
     }
 }
-void State::gasProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
+void state::gasProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
     int incr = elem::randomIncrement();
     if( randf() < 0.8 )
-        if( elem::tryMove(x, y, x, y-1) ) return;
+        if( tryMove(g, x, y, x, y-1) ) return;
     else if( randf() < 0.5 ) {
-        if( elem::tryMove(x, y, x+incr, y-1) ) return;
-        if( elem::tryMove(x, y, x-incr, y-1) ) return;    
+        if( tryMove(g, x, y, x+incr, y-1) ) return;
+        if( tryMove(g, x, y, x-incr, y-1) ) return;    
     } else {
-        if( elem::tryMove(x, y, x+incr, y) ) return;
-        if( elem::tryMove(x, y, x-incr, y) ) return;    
+        if( tryMove(g, x, y, x+incr, y) ) return;
+        if( tryMove(g, x, y, x-incr, y) ) return;    
     }
-    if( elem::tryMove(x, y, x+incr, y-1) ) return;
-    if( elem::tryMove(x, y, x-incr, y-1) ) return;
-    if( elem::tryMove(x, y, x+incr, y) ) return;
-    if( elem::tryMove(x, y, x-incr, y) ) return;
+    if( tryMove(g, x, y, x+incr, y-1) ) return;
+    if( tryMove(g, x, y, x-incr, y-1) ) return;
+    if( tryMove(g, x, y, x+incr, y) ) return;
+    if( tryMove(g, x, y, x-incr, y) ) return;
 }
-void State::emitterProcess(int x, int y) {
-    if( universalProcess(x, y) ) return;
-    std::string to_place = elem::emits[ Grid::getElem(x, y) ];
-    elem::tryPlace(x-1, y, to_place);
-    elem::tryPlace(x+1, y, to_place);
-    elem::tryPlace(x, y-1, to_place);
-    elem::tryPlace(x, y+1, to_place);
+void state::emitterProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
+    std::string to_place = elem::emits[ g.getElem(x, y) ];
+    tryPlace(g, x-1, y, to_place);
+    tryPlace(g, x+1, y, to_place);
+    tryPlace(g, x, y-1, to_place);
+    tryPlace(g, x, y+1, to_place);
     return;
 }
+
+std::vector<void(*)(Grid&,int,int)> state::stateProcess = {
+    &gasProcess,
+    &liquidProcess,
+    &dustProcess,
+    &solidProcess,
+    &emitterProcess,
+};

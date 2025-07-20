@@ -18,24 +18,22 @@ extern std::unordered_map<char, std::string> key_to_elem;
 
 class Grid {
 
-    static int size; // size of grid on both axis
-    static int scale; // scale multiplier of window size
+    int size; // size of grid on both axis
+    int scale; // scale multiplier of window size
 
     bool even_state = false;
 
-    static std::vector<std::vector<Pixel>> grid;
-    static std::vector<std::vector<sf::Color>> debug_grid;
-    static std::vector<std::vector<bool>> active_chunks;
-    static sf::Image image;
-    static sf::Texture texture;
-    static sf::Sprite sprite;
-    static sf::RenderWindow window;
+    std::vector<std::vector<Pixel>> grid;
+    std::vector<std::vector<sf::Color>> debug_grid;
+    std::vector<std::vector<bool>> active_chunks;
+    sf::Image image;
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::RenderWindow window;
 
     sf::Font font;
-    static sf::Text cornerText;
-    static sf::Text cornerText2;
-
-    static std::vector<void(*)(int,int)> stateProcess; // inititalized in element.cpp
+    sf::Text cornerText;
+    sf::Text cornerText2;
     public:
     // constructors
     Grid() : Grid(40) {}
@@ -104,7 +102,7 @@ class Grid {
                     if( even_state ) {x2 = j*CHUNK+CHUNK-1; to=j*CHUNK-1; incr = -1; }
                     for( int y=i*CHUNK+CHUNK-1; y>=i*CHUNK; --y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( !isEmpty(x, y) && grid[y][x].getState() != State::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() != state::GAS && !grid[y][x].getProcessed() ) {
                                 processPixel(x, y);
                             }
                 }
@@ -116,7 +114,7 @@ class Grid {
                     if( even_state ) {x2 = j*CHUNK+CHUNK-1; to=j*CHUNK-1; incr = -1; }
                     for( int y=i*CHUNK; y<i*CHUNK+CHUNK; ++y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( !isEmpty(x, y) && grid[y][x].getState() == State::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() == state::GAS && !grid[y][x].getProcessed() ) {
                                 processPixel(x, y);
                             }
                 }
@@ -128,7 +126,7 @@ class Grid {
         tempProcess(x, y);
         render(x, y);
         // movement utility functions defined in grid.cpp
-        (stateProcess[ grid[y][x].getState() ])(x, y);
+        (state::stateProcess[ grid[y][x].getState() ])(*this, x, y);
     }
     void handleInput(); // defined in input.h
     void reactionProcess(int x, int y) {
@@ -221,24 +219,24 @@ class Grid {
         if( getTemp(x, y) > 25 && getTemp(x, y) < 35 ) setTemp(x, y, 30);
     }
     // pixel grid functions 
-    static bool inBounds(int x, int y) {
+    bool inBounds(int x, int y) {
         return !(x<0 || y<0 || x>=size || y>=size);
     }
-    static bool isEmpty(int x, int y) {
-        return (grid[y][x].getElem() == ""); // empty element is ""
+    bool isEmpty(int x, int y) {
+        return grid[y][x].getElem() == ""; // empty element is ""
     }
-    static std::string getElem(int x, int y) {
+    std::string getElem(int x, int y) {
         return grid[y][x].getElem();
     }
-    static float getDensity(int x, int y) {
-        return elem::list[grid[y][x].getElem()].density;
+    float getDensity(int x, int y) {
+        return elem::list[this->grid[y][x].getElem()].density;
     }
     
-    static void setDebug(int x, int y, sf::Color c = sf::Color(0, 55, 0)) {
-        debug_grid[y][x] = c;
+    void setDebug(int x, int y, sf::Color c = sf::Color(0, 55, 0)) {
+        this->debug_grid[y][x] = c;
         render(x, y);
     }
-    static void setChunk(int x, int y, bool b) {
+    void setChunk(int x, int y, bool b) {
         if( !inBounds(x*CHUNK+CHUNK-1, y*CHUNK+CHUNK-1) ) return;
         active_chunks[y][x] = b;
         /*
@@ -251,13 +249,13 @@ class Grid {
                 setDebug(i, j, c);
         */
     }
-    static void setChunkRegion(int x, int y) {
+    void setChunkRegion(int x, int y) {
         setChunk(x, y, true);
         setChunk(x-1, y, true);
         setChunk(x+1, y, true);
         setChunk(x, y-1, true);
         setChunk(x, y+1, true);
-        if( grid[y][x].getState() == State::GAS ) {
+        if( grid[y][x].getState() == state::GAS ) {
             setChunk(x+1, y-1, true);
             setChunk(x-1, y-1, true);
         }
@@ -266,7 +264,7 @@ class Grid {
             setChunk(x-1, y+1, true);
         }
     }
-    static void render(int x, int y) {
+    void render(int x, int y) {
         sf::Color col = grid[y][x].getCol();
         int addR = getTemp(x, y) / 50;
         col.r += std::min( 255-col.r, 12*addR );
@@ -278,7 +276,7 @@ class Grid {
         image.setPixel(x, y, col + debug_grid[y][x] );
     }
     
-    static void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
+    void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
         setChunkRegion(x/CHUNK, y/CHUNK);
         int oldtemp = getTemp(x, y);
         float oldwet = elem::list[s].wet;
@@ -291,25 +289,25 @@ class Grid {
         grid[y][x].setWet(oldwet);
         render(x, y);
     }
-    static double getTemp(int x, int y) {
+    double getTemp(int x, int y) {
         return grid[y][x].getTemp();
     }
-    static void setTemp(int x, int y, int val) {
+    void setTemp(int x, int y, int val) {
         grid[y][x].setTemp(val);
     }
-    static float getWet(int x, int y) {
+    float getWet(int x, int y) {
         return grid[y][x].getWet();
     }
-    static void setWet(int x, int y, int val) {
+    void setWet(int x, int y, int val) {
         grid[y][x].setWet(val);
     }
-    static void switchPixel(int x, int y, int x2, int y2) {
+    void switchPixel(int x, int y, int x2, int y2) {
         std::swap( grid[y][x], grid[y2][x2] );
         setChunkRegion(x2/CHUNK, y2/CHUNK);
         render(x,y);
         render(x2,y2);
     }
-    static void checkReaction(int x, int y, int x2, int y2) {
+    void checkReaction(int x, int y, int x2, int y2) {
         if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
         std::string elem1 = grid[y][x].getElem();
         std::string elem2 = grid[y2][x2].getElem();
@@ -326,7 +324,7 @@ class Grid {
         }
     }
 
-    static void updateText() {
+    void updateText() {
         sf::Vector2i pos = sf::Vector2i(sf::Mouse::getPosition(window).x / scale, sf::Mouse::getPosition(window).y / scale);
         if( inBounds(pos.x, pos.y) ) {
             sf::Color col = grid[pos.y][pos.x].getCol();
@@ -339,7 +337,7 @@ class Grid {
     }
 
     // FPS DEBUGGING
-    static void fps() {
+    void fps() {
         using clock = std::chrono::steady_clock;
         static auto last_time = clock::now();
 

@@ -10,7 +10,7 @@ namespace elem {
 // element struct (contains only metadata, Pixel class has the dynamic data)
 struct element {
     sf::Color col;
-    State::State state;
+    state::States elemstate;
     float density = 1; // reversed for gases
     bool burning = false;
     float wet = 0;
@@ -25,22 +25,26 @@ struct element {
 };
 
 // utility function for easier defining
-element el(State::State state, char* hex);
+element el(state::States elemstate, const char* hex, float density = 1, const char* tags = "");
 
 extern int intStep(int n, int m, int step);
-extern void tryPlace(int x, int y, std::string element);
-extern bool tryMove(int x, int y, int x2, int y2, bool gas = false);
 extern int randomIncrement();
 
-// map from state to process function
+// Element list
 extern std::unordered_map< std::string, element > list;
+
+// Element reactions
 extern std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction;
 extern std::unordered_map< std::string, std::string > emits;
+
 extern std::unordered_map< std::string, std::string > hardmelt;
 extern std::unordered_map< std::string, std::string > melt;
+
 extern std::unordered_map< std::string, std::string > evap_to;
+
 extern std::unordered_map< std::string, std::string > wet_to;
 extern std::unordered_map< std::string, std::string > dry_to;
+
 extern std::unordered_map< std::string, std::string > freeze;
 extern std::unordered_map< std::string, std::string > unfreeze;
 }
