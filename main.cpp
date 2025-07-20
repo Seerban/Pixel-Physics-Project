@@ -1,22 +1,38 @@
 #include "Grid.h"
+#include "ui.h"
 
 const int SIZE = 80; //multiple of CHUNK size in grid.h
 const int SCALE = 6;
 const int FPS = 30;
 
-void show_controls() {
-    std::cout<<"-------- KEYS --------"<<std::endl;
-    std::cout<<"Nums - Brush Size\n";
-    std::vector< std::pair< char, std::string > > list;
-    for(auto it=key_to_elem.begin(); it!=key_to_elem.end(); ++it)
-        list.emplace_back( it->first, it->second );
-    std::sort( list.begin(), list.end(), [](std::pair<char, std::string> a, std::pair<char, std::string> b) {return a.first < b.first;});
-    for(auto it=list.begin(); it!=list.end(); ++it) std::cout<<it->first<<" - "<<it->second<<std::endl;
-}
-
 int main() {
+    srand(time(0));
+    sf::RenderWindow window;
+    sf::Image image; // manipulated inside grid
+    sf::Texture texture;
+    sf::Sprite sprite;
+    image.create(SIZE, SIZE, sf::Color::Black);
+    texture.loadFromImage(image);
+    sprite.setTexture(texture);
+    sprite.setScale(SCALE, SCALE);
+    window.create( sf::VideoMode(SIZE*SCALE, SIZE*SCALE), "Grid" );
+    window.setFramerateLimit( FPS );
 
     //show_controls();
-    Grid grid(SIZE, SCALE, FPS);
-    grid.start();
+    Grid grid(SIZE, SCALE, FPS, image, window);
+    UIHandler ui(SIZE, SCALE, window, grid);
+
+    while (window.isOpen()) {
+            grid.handleInput();
+            grid.process();
+            
+            texture.update(image);
+            window.clear();
+            window.draw(sprite);
+            
+            ui.draw();
+            //grid.updateText();
+
+            window.display();
+        }
 }

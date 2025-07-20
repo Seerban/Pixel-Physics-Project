@@ -10,8 +10,7 @@
 #include "Element.h"
 #include "Pixel.h"
 #include "States.h"
-
-float randf();
+#include "elemutil.h"
 
 const int CHUNK = 4;
 extern std::unordered_map<char, std::string> key_to_elem;
@@ -21,70 +20,27 @@ class Grid {
     int size; // size of grid on both axis
     int scale; // scale multiplier of window size
 
-    bool even_state = false;
-
+    bool even_state = false; // switches process from left-right to right-left
     std::vector<std::vector<Pixel>> grid;
     std::vector<std::vector<sf::Color>> debug_grid;
     std::vector<std::vector<bool>> active_chunks;
-    sf::Image image;
-    sf::Texture texture;
-    sf::Sprite sprite;
-    sf::RenderWindow window;
 
-    sf::Font font;
-    sf::Text cornerText;
-    sf::Text cornerText2;
+    sf::Image *image;
+    sf::RenderWindow *window;
     public:
-    // constructors
-    Grid() : Grid(40) {}
-    Grid(int size, int scale = 8, int fps = 12) {
+
+    Grid(int size, int scale, int fps, sf::Image &img, sf::RenderWindow &win) {
             this->size = size;
             this->scale = scale;
-            window.create( sf::VideoMode(size*scale, size*scale), "Grid" );
-            window.setFramerateLimit( fps );
-            
-            image.create(size, size, sf::Color::Black);
-            texture.loadFromImage(image);
-            sprite.setTexture(texture);
-            sprite.setScale(scale, scale);
+            this->image = &img;
+            this->window = &win;
             
             grid.resize(size, std::vector<Pixel>(size));
             debug_grid.resize(size, std::vector<sf::Color>(size));
             active_chunks.resize(size/CHUNK, std::vector<bool>(size/CHUNK));
-
-            font.loadFromFile( "Roboto-Bold.ttf" );
-            cornerText.setStyle(sf::Text::Bold);    
-            cornerText.setFont(font);
-            cornerText.setCharacterSize(12);
-            cornerText.setFillColor( sf::Color(255, 255, 255) );
-            cornerText.setString( "Hello World" );
-            cornerText2.setFont(font);
-            cornerText2.setCharacterSize(12);
-            cornerText2.setFillColor( sf::Color(255, 255, 255) );
-            cornerText2.setString( "abcdef");
-            cornerText2.setPosition( sf::Vector2f(0, size*scale - 12) );
         }
-    // main process functions
-    void start() {
-        srand(time(0));
-        while (window.isOpen()) {
-            handleInput();
 
-            mainProcess();
-            texture.update(image);
-            window.clear();
-            window.draw(sprite);
-
-            updateText();
-
-            window.draw(cornerText);
-            window.draw(cornerText2);
-
-            window.display();
-        }
-    }
-    void mainProcess() {
-        fps(); // only shows digits and erases
+    void process() {
         even_state = !even_state;
         //set all to unprocessed
         std::vector<std::vector<bool>> old_chunks = active_chunks;
@@ -207,7 +163,7 @@ class Grid {
 
         for(int i = 0; i < 8; i+=2) {
                 if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) {
-                    setTemp( x, y, elem::intStep( getTemp(x, y), 30, 3) );
+                    setTemp( x, y, elemutil::intStep( getTemp(x, y), 30, 3) );
                     continue;
                 }
                 
@@ -273,10 +229,10 @@ class Grid {
             col.g += std::min( 255-col.g, 10*addW );
             col.b += std::min( 255-col.b, 10*addW );
         }
-        image.setPixel(x, y, col + debug_grid[y][x] );
+        image->setPixel(x, y, col + debug_grid[y][x] );
     }
     
-    void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
+    void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window->setPixel
         setChunkRegion(x/CHUNK, y/CHUNK);
         int oldtemp = getTemp(x, y);
         float oldwet = elem::list[s].wet;
@@ -315,7 +271,7 @@ class Grid {
         auto it = elem::reaction[elem1].find( elem2 );
         
         // check special interaction with neighbors
-        if( it != elem::reaction[elem1].end() && randf() < elem::reaction[elem1][elem2].second )
+        if( it != elem::reaction[elem1].end() && elemutil::randf() < elem::reaction[elem1][elem2].second )
         setPixel(x, y, elem::reaction[elem1][elem2].first);
 
         auto it2 = elem::reaction[elem2].find( elem1 );
@@ -323,29 +279,7 @@ class Grid {
             setPixel(x2, y2, elem::reaction[elem2][elem1].first );
         }
     }
-
-    void updateText() {
-        sf::Vector2i pos = sf::Vector2i(sf::Mouse::getPosition(window).x / scale, sf::Mouse::getPosition(window).y / scale);
-        if( inBounds(pos.x, pos.y) ) {
-            sf::Color col = grid[pos.y][pos.x].getCol();
-            cornerText.setFillColor( sf::Color( (col.r + 200)/2, (col.g + 200)/2, (col.b + 200)/2 ) );
-
-            int temp = grid[pos.y][pos.x].getTemp();
-
-            cornerText.setString( getElem(pos.x, pos.y) + '\n' + std::to_string(temp) + "C" );
-        }
-    }
-
-    // FPS DEBUGGING
-    void fps() {
-        using clock = std::chrono::steady_clock;
-        static auto last_time = clock::now();
-
-        auto now = clock::now();
-        std::chrono::duration<double> elapsed = now - last_time;
-        last_time = now;
-
-        float fps = 1.0 / elapsed.count();
-        cornerText2.setString( std::to_string( int(fps+0.5) ) + " TPS" );
+    sf::Color getCol(int x, int y) {
+        return grid[y][x].getCol();
     }
 };

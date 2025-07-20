@@ -32,19 +32,19 @@ void brush(Grid& g, int x, int y, bool erase=false) {
 
 void Grid::handleInput() {
     sf::Event event;
-    while (window.pollEvent(event)) {
+    while (window->pollEvent(event)) {
         // exit button
         if (event.type == sf::Event::Closed)
-            window.close();
+            window->close();
         // place elem event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            sf::Vector2i pos = sf::Mouse::getPosition(window);
+            sf::Vector2i pos = sf::Mouse::getPosition(*window);
             brush(*this, pos.x / scale, pos.y / scale);
             return;
         }
         // erase event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-            sf::Vector2i pos = sf::Mouse::getPosition(window);
+            sf::Vector2i pos = sf::Mouse::getPosition(*window);
             brush(*this, pos.x / scale, pos.y / scale, true);
             return;
         }

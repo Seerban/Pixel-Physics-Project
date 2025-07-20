@@ -42,7 +42,7 @@ std::unordered_map< std::string, element > list {
     {"wet_sand",        el(state::SOLID,   "A28260", 2,    "s")},
 
     {"burning_gasoline",el(state::LIQUID,  "FF2222", 0.9,  "b")},
-    {"gasoline",        el(state::LIQUID,  "151055", 0.9, "cE")},
+    {"gasoline",        el(state::LIQUID,  "151055", 0.9,  "cE")},
     {"lava",            el(state::LIQUID,  "DD3505", 2,    "B")},
     {"water",           el(state::LIQUID,  "0E87CC", 1,    "wf")},
 
@@ -102,18 +102,7 @@ std::unordered_map< std::string, std::string > freeze {
 std::unordered_map< std::string, std::string > unfreeze {
     {"ice", "water"},
 };
-// Utility functions for state process
-float randf() {
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
-int randomIncrement() {
-    return ( rand() % 2 == 0 ) ? 1 : -1;
-}
-int intStep(int n, int m, int step) {
-    if (n < m && m - n > step) return n + step;
-    if (n > m && n - m > step) return n - step; 
-    return m;
-}
+
 // Movement process for each state
 // returns 1 if erased/transformed
 }

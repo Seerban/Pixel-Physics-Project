@@ -14,7 +14,7 @@ void tryPlace(Grid &g, int x, int y, std::string element) {
 }
 
 int state::universalProcess(Grid &g, int x, int y) {
-    if( elem::list[g.getElem(x, y)].evaporates && randf() < 0.1 ) {
+    if( elem::list[g.getElem(x, y)].evaporates && elemutil::randf() < 0.1 ) {
         auto temp = elem::evap_to.find( g.getElem(x, y) );
         if( temp != elem::evap_to.end() )
             g.setPixel(x, y, temp->second);
@@ -30,14 +30,14 @@ void state::solidProcess(Grid &g, int x, int y) {
 void state::dustProcess(Grid &g, int x, int y) {
     if( universalProcess(g, x, y) ) return;
     if( tryMove(g, x, y, x, y+1) ) return;
-    int incr = elem::randomIncrement();
+    int incr = elemutil::randomIncrement();
     if( tryMove(g, x, y, x+incr, y+1) ) return;
     if( tryMove(g, x, y, x-incr, y+1) ) return;
 }
 void state::liquidProcess(Grid &g, int x, int y) {
     if( universalProcess(g, x, y) ) return;
     if( tryMove(g, x, y, x, y+1) ) return;
-    int incr = elem::randomIncrement();
+    int incr = elemutil::randomIncrement();
     if( tryMove(g, x, y, x+incr, y+1) ) return;
     if( tryMove(g, x, y, x-incr, y+1) ) return;
     if( tryMove(g, x, y, x+incr, y) ) {
@@ -57,10 +57,10 @@ void state::liquidProcess(Grid &g, int x, int y) {
 }
 void state::gasProcess(Grid &g, int x, int y) {
     if( universalProcess(g, x, y) ) return;
-    int incr = elem::randomIncrement();
-    if( randf() < 0.8 )
+    int incr = elemutil::randomIncrement();
+    if( elemutil::randf() < 0.8 )
         if( tryMove(g, x, y, x, y-1) ) return;
-    else if( randf() < 0.5 ) {
+    else if( elemutil::randf() < 0.5 ) {
         if( tryMove(g, x, y, x+incr, y-1) ) return;
         if( tryMove(g, x, y, x-incr, y-1) ) return;    
     } else {

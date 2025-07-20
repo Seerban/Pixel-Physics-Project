@@ -27,9 +27,6 @@ struct element {
 // utility function for easier defining
 element el(state::States elemstate, const char* hex, float density = 1, const char* tags = "");
 
-extern int intStep(int n, int m, int step);
-extern int randomIncrement();
-
 // Element list
 extern std::unordered_map< std::string, element > list;
 
