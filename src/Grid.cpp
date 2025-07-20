@@ -178,15 +178,16 @@ void Grid::setDebug(int x, int y, sf::Color c) {
 void Grid::setChunk(int x, int y, bool b) {
     if( !inBounds(x*CHUNK+CHUNK-1, y*CHUNK+CHUNK-1) ) return;
     active_chunks[y][x] = b;
-    /*
+    
     //COLORIZES CHUNKS, HEAVY PERFORMANCE IMPACT
-    sf::Color c = sf::Color(0, 0, 0);
-    if( b ) c = sf::Color(0, 55, 0);
-    // debug colors
-    for(int i=x*CHUNK; i<x*CHUNK+CHUNK; ++i)
-        for(int j=y*CHUNK; j<y*CHUNK+CHUNK; ++j)
-            setDebug(i, j, c);
-    */
+    if( debug ) {
+        sf::Color c = sf::Color(0, 0, 0);
+        if( b ) c = sf::Color(0, 55, 0);
+        // debug colors
+        for(int i=x*CHUNK; i<x*CHUNK+CHUNK; ++i)
+            for(int j=y*CHUNK; j<y*CHUNK+CHUNK; ++j)
+                setDebug(i, j, c);
+    }
 }
 void Grid::setChunkRegion(int x, int y) {
     setChunk(x, y, true);
@@ -202,6 +203,13 @@ void Grid::setChunkRegion(int x, int y) {
         setChunk(x+1, y+1, true);
         setChunk(x-1, y+1, true);
     }
+}
+void Grid::clearDebug() {
+    for(int i = 0; i < size; ++i)
+        for(int j = 0; j < size; ++j) {
+            debug_grid[i][j] = sf::Color(0, 0, 0, 0);
+            render(j, i);
+        }
 }
 void Grid::render(int x, int y) {
     sf::Color col = grid[y][x].getCol();

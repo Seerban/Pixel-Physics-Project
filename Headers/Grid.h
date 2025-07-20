@@ -16,12 +16,13 @@ class Grid {
 
     bool even_state = false; // switches process from left-right to right-left
     std::vector<std::vector<Pixel>> grid;
-    std::vector<std::vector<sf::Color>> debug_grid;
     std::vector<std::vector<bool>> active_chunks;
-
+    std::vector<std::vector<sf::Color>> debug_grid;
+    
     sf::Image *image;
     sf::RenderWindow *window;
     public:
+    bool debug = false;
 
     Grid(int size, int scale, int fps, sf::Image &img, sf::RenderWindow &win);
     // processes for pixel interactions
@@ -40,6 +41,7 @@ class Grid {
     void setDebug(int x, int y, sf::Color c = sf::Color(0, 55, 0));
     void setChunk(int x, int y, bool b);
     void setChunkRegion(int x, int y);
+    void clearDebug();
     void render(int x, int y);
     // pixel manipulation
     void setPixel(int x, int y, std::string s, bool override = false);

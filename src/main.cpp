@@ -6,6 +6,29 @@ const int SIZE = 80; //multiple of CHUNK size in grid.h
 const int SCALE = 6;
 const int FPS = 30;
 
+std::string controls = \
+"---------------- CONTROLS ----------------\n \
+F1 - Chunk Debug Mode (Performance Heavy) \n\
+Nums - Brush Size \n\
+■ Solids ■ \n\
+[q]Dirt \t\
+[w]Rock \t\
+[e]Ice \n\
+▲ Dusts ▲ \n\
+[a]Sand \t\
+[s]Gravel \n\
+≈ Liquids ≈ \n\
+[z/Z]Water \t\
+[x]Gasoline \t\
+[c]Lava \n\
+● Gases ● \n\
+[f/F]Fire \t\
+[g]Plasma \t\
+[h]Steam \n\
+✧ Lifeform ✧ \n\
+¿ Other ? \
+";
+
 int main() {
     srand(time(0));
     sf::RenderWindow window;
@@ -23,6 +46,8 @@ int main() {
     Grid grid(SIZE, SCALE, FPS, image, window);
     UIHandler ui(SIZE, SCALE, window, grid);
     InputHandler input(SIZE, SCALE, grid, window);
+
+    std::cout<<controls<<std::endl;
 
     while (window.isOpen()) {
             grid.process();

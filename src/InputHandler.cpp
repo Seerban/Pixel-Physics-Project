@@ -1,20 +1,23 @@
 #include "InputHandler.h"
 
 std::unordered_map<char, std::string> key_to_elem = {
-    {'d', "dirt"},
+    {'q', "dirt"},
+    {'w', "rock"},
+    {'e', "ice"},
+    {'r', "mud"},
+
+    {'a', "sand"},
+    {'s', "gravel"},
+
+    {'z', "water"},
+    {'Z', "water_source"},
+    {'x', "gasoline"},
+    {'c', "lava"},
+    
     {'f', "fire"},
     {'F', "fire_source"},
-    {'g', "gasoline"},
-    {'G', "gravel"},
-    {'i', "ice"},
-    {'l', "lava"},
-    {'m', "mud"},
-    {'p', "plasma"},
-    {'r', "rock"},
-    {'s', "sand"},
-    {'S', "steam"},
-    {'w', "water"},
-    {'W', "water_source"},
+    {'g', "plasma"},
+    {'h', "steam"},
 };
 
 InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {
@@ -51,8 +54,14 @@ void InputHandler::process() {
             brush(pos.x / scale, pos.y / scale, true);
             return;
         }
-        // key to select element
+        // key to select element/debug
         if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::F1) {
+                g->clearDebug();
+                g->debug = !g->debug;
+                return;
+            }
+            // assume key to select elem otherwise
             int key = int(event.key.code + 97);
             // 124 is '0' because of the added value for letter chars
             if(key >= 124 && key <= 133) {
