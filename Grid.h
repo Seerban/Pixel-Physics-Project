@@ -9,6 +9,7 @@
 #include <string>
 #include "Element.h"
 #include "Pixel.h"
+#include "States.h"
 
 float randf();
 
@@ -54,6 +55,7 @@ class Grid {
             active_chunks.resize(size/CHUNK, std::vector<bool>(size/CHUNK));
 
             font.loadFromFile( "Roboto-Bold.ttf" );
+            cornerText.setStyle(sf::Text::Bold);    
             cornerText.setFont(font);
             cornerText.setCharacterSize(12);
             cornerText.setFillColor( sf::Color(255, 255, 255) );
@@ -102,7 +104,7 @@ class Grid {
                     if( even_state ) {x2 = j*CHUNK+CHUNK-1; to=j*CHUNK-1; incr = -1; }
                     for( int y=i*CHUNK+CHUNK-1; y>=i*CHUNK; --y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( !isEmpty(x, y) && grid[y][x].getState() != elem::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() != State::GAS && !grid[y][x].getProcessed() ) {
                                 processPixel(x, y);
                             }
                 }
@@ -114,7 +116,7 @@ class Grid {
                     if( even_state ) {x2 = j*CHUNK+CHUNK-1; to=j*CHUNK-1; incr = -1; }
                     for( int y=i*CHUNK; y<i*CHUNK+CHUNK; ++y)
                         for( int x=x2; x!=to; x+=incr)
-                            if( !isEmpty(x, y) && grid[y][x].getState() == elem::GAS && !grid[y][x].getProcessed() ) {
+                            if( !isEmpty(x, y) && grid[y][x].getState() == State::GAS && !grid[y][x].getProcessed() ) {
                                 processPixel(x, y);
                             }
                 }
@@ -216,7 +218,7 @@ class Grid {
                 grid[y+incrs[i]][x+incrs[i+1]].setTemp( temp1*0.2 + temp2*0.8 );
                 grid[y][x].setTemp( temp1*0.8 + temp2*0.2 );
             }
-        //setTemp( x, y, elem::intStep( getTemp(x, y), 30, 1) );
+        if( getTemp(x, y) > 25 && getTemp(x, y) < 35 ) setTemp(x, y, 30);
     }
     // pixel grid functions 
     static bool inBounds(int x, int y) {
@@ -255,7 +257,7 @@ class Grid {
         setChunk(x+1, y, true);
         setChunk(x, y-1, true);
         setChunk(x, y+1, true);
-        if( grid[y][x].getState() == elem::GAS ) {
+        if( grid[y][x].getState() == State::GAS ) {
             setChunk(x+1, y-1, true);
             setChunk(x-1, y-1, true);
         }
@@ -268,16 +270,21 @@ class Grid {
         sf::Color col = grid[y][x].getCol();
         int addR = getTemp(x, y) / 50;
         col.r += std::min( 255-col.r, 12*addR );
+        if( getTemp(x, y) > 1000 ) {
+            int addW = ( getTemp(x, y) - 1000 ) / 50;
+            col.g += std::min( 255-col.g, 10*addW );
+            col.b += std::min( 255-col.b, 10*addW );
+        }
         image.setPixel(x, y, col + debug_grid[y][x] );
     }
     
     static void setPixel(int x, int y, std::string s, bool override = false) { // not to be confused with window.setPixel
         setChunkRegion(x/CHUNK, y/CHUNK);
         int oldtemp = getTemp(x, y);
-        float oldwet = getWet(x, y);
+        float oldwet = elem::list[s].wet;
         if( override ) { 
             oldtemp = elem::list[s].temperature;
-            oldwet = elem::list[s].wet;
+            //oldwet = elem::list[s].wet;
         }
         grid[y][x] = Pixel(s);
         grid[y][x].setTemp(oldtemp);

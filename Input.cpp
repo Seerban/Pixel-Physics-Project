@@ -13,6 +13,7 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'i', "ice"},
     {'l', "lava"},
     {'m', "mud"},
+    {'p', "plasma"},
     {'r', "rock"},
     {'s', "sand"},
     {'S', "steam"},

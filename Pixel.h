@@ -7,7 +7,7 @@
 class Pixel {
     std::string elem;
     sf::Color col;
-    elem::State state;
+    State::State state;
     bool processed;
     float wet = 0; // humidity
     double temp = 30; // assumed room temperature
@@ -33,8 +33,8 @@ public:
     void setElem(std::string s) { this->elem = s; }
     sf::Color getCol() { return this->col; }
     void setCol(sf::Color c) { this->col = c; }
-    elem::State getState() { return this->state; }
-    void setState(elem::State s) { this->state = s; }
+    State::State getState() { return this->state; }
+    void setState(State::State s) { this->state = s; }
     bool getProcessed() { return this->processed; }
     void setProcessed(bool b) { this->processed = b; }
     float getWet() { return this->wet; }
