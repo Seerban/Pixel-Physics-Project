@@ -12,6 +12,7 @@ enum States {
     DUST, 
     SOLID, 
     EMITTER, // "spawns" other pixels and is SOLID
+    LIFEFORM,
 };
 
 // state processes
@@ -21,6 +22,7 @@ void dustProcess(Grid &g, int x, int y);
 void liquidProcess(Grid &g, int x, int y);
 void gasProcess(Grid &g, int x, int y);
 void emitterProcess(Grid &g, int x, int y);
+void lifeformProcess(Grid &g, int x, int y);
 
 extern std::vector<void(*)(Grid&,int,int)> stateProcess;
 }

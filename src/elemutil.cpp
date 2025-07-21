@@ -12,4 +12,13 @@ namespace elemutil {
         if (n > m && n - m > step) return n - step; 
         return m;
     }
+    int countChar(const char* s, char c) {
+        int total = 0;
+        while( *s ) {
+            if( *s == c )
+                total++;
+            ++s;
+            }
+        return total;
+    }
 }

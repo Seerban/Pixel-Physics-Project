@@ -18,6 +18,9 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'F', "fire_source"},
     {'g', "plasma"},
     {'h', "steam"},
+
+    {'b', "bug"},
+    {'n', "seed"},
 };
 
 InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {

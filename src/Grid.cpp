@@ -113,6 +113,7 @@ void Grid::tempProcess(int x, int y) {
         if( elem::list[ grid[y][x].getElem() ].flammable )
         setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second , true);
         else setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second );
+        if( isEmpty(x, y) ) setTemp(x, y, 30);
         return;
     }
     // stop burning
@@ -150,11 +151,11 @@ void Grid::checkReaction(int x, int y, int x2, int y2) {
     auto it = elem::reaction[elem1].find( elem2 );
     
     // check special interaction with neighbors
-    if( it != elem::reaction[elem1].end() && elemutil::randf() < elem::reaction[elem1][elem2].second )
-    setPixel(x, y, elem::reaction[elem1][elem2].first);
+    if( it != elem::reaction[elem1].end() )
+    setPixel(x, y, elem::reaction[elem1][elem2]);
     auto it2 = elem::reaction[elem2].find( elem1 );
-    if( it2 != elem::reaction[elem2].end() && elem::reaction[elem2][elem1].second ) {
-        setPixel(x2, y2, elem::reaction[elem2][elem1].first );
+    if( it2 != elem::reaction[elem2].end() ) {
+        setPixel(x2, y2, elem::reaction[elem2][elem1] );
     }
 }
 

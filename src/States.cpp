@@ -81,6 +81,16 @@ void state::emitterProcess(Grid &g, int x, int y) {
     tryPlace(g, x, y+1, to_place);
     return;
 }
+void state::lifeformProcess(Grid &g, int x, int y) {
+    if( universalProcess(g, x, y) ) return;
+    if( tryMove(g, x, y, x, y+1) ) return;
+    //if( elemutil:: randf() > 0.5 ) return; // chance to not move
+    int incr = elemutil::randomIncrement();
+    if( tryMove(g, x, y, x+incr, y) ) return;
+    if( tryMove(g, x, y, x+incr, y-1) ) return;
+    if( tryMove(g, x, y, x-incr, y) ) return;
+    if( tryMove(g, x, y, x-incr, y-1) ) return;
+}
 
 std::vector<void(*)(Grid&,int,int)> state::stateProcess = {
     &gasProcess,
@@ -88,4 +98,5 @@ std::vector<void(*)(Grid&,int,int)> state::stateProcess = {
     &dustProcess,
     &solidProcess,
     &emitterProcess,
+    &lifeformProcess,
 };

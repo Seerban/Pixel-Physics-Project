@@ -31,7 +31,7 @@ element el(state::States elemstate, const char* hex, float density = 1, const ch
 extern std::unordered_map< std::string, element > list;
 
 // Element reactions
-extern std::unordered_map< std::string, std::unordered_map< std::string, std::pair< std::string, float > > > reaction;
+extern std::unordered_map< std::string, std::unordered_map< std::string, std::string> > reaction;
 extern std::unordered_map< std::string, std::string > emits;
 
 extern std::unordered_map< std::string, std::string > hardmelt;

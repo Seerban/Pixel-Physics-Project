@@ -25,7 +25,9 @@ Nums - Brush Size \n\
 [f/F]Fire \t\
 [g]Plasma \t\
 [h]Steam \n\
-✧ Lifeform ✧ \n\
+✧ Life ✧ \n\
+[b]Bug \t\
+[n]Seed \n\
 ¿ Other ? \
 ";
 
