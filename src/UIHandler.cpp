@@ -3,7 +3,7 @@
 UIHandler::UIHandler(int size, int scale, sf::RenderWindow &window, Grid &g) {
     this->size = size;
     this->scale = scale;
-    this->font_size = 16;
+    this->font_size = 24;
     this->g = &g;
     this->window = &window;
     font.loadFromFile( "Assets/Roboto-Bold.ttf" );

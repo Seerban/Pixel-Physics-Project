@@ -24,6 +24,7 @@ struct element {
     bool colorless = false; // removes color variability
     bool highlight = false; // has white highlights
     bool evaporates = false; // evaporates into anothe relement
+    float evap_chance = 0;
     bool fluid = false; // flows faster 
     bool sponge = false; // absorbs water
     bool flammable = false;

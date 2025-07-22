@@ -10,6 +10,11 @@ std::string controls = \
 "---------------- CONTROLS ----------------\n \
 F1 - Chunk Debug Mode (Performance Heavy) \n\
 Nums - Brush Size \n\
+◈ Static ◈\n\
+[W]Wood \t\
+[F]Fuse \t\
+[m]Metal \t\
+[D]Diamond \n\
 ■ Solids ■ \n\
 [d]Dirt \t\
 [r]Rock \t\
@@ -18,16 +23,22 @@ Nums - Brush Size \n\
 [s]Sand \t\
 [g]Gravel \n\
 ≈ Liquids ≈ \n\
-[w/W]Water \t\
+[w]Water \t\
 [o]Oil \t\t\
 [l]Lava \n\
 ● Gases ● \n\
-[f/F]Fire \t\
-[p]Plasma \n\
+[c]Cloud \t\
+[O]Oxygen \n\
+* Energy * \n\
+[f]Fire \t\
+[p]Plasma \t\
+[k]Spark \t\
+[e]Explosion \n\
+[n]Nuke \n\
 ✧ Life ✧ \n\
 [b]Bug \t\t\
-[G]Grass Seed \n\
-¿ Other ? \
+[G]Grass Seed \t\
+[P]Plant \n\
 ";
 
 int main() {

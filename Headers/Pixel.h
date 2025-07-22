@@ -46,7 +46,7 @@ public:
         // random col variation
         int col_var = 6;
         if( elem::list[ getElem() ].colorful ) col_var = 20;
-        if( elem::list[ getElem() ].colorless ) col_var = 0;
+        if( elem::list[ getElem() ].colorless ) col_var = 1;
         int dr = ( rand() % (col_var*2+1) ) - col_var;
         int dg = ( rand() % (col_var*2+1) ) - col_var;
         int db = ( rand() % (col_var*2+1) ) - col_var;
@@ -57,9 +57,9 @@ public:
             dg += high;
             db += high;
         }
-        int r = std::clamp(static_cast<int>(col.r) + dr, 0, 255);
-        int g = std::clamp(static_cast<int>(col.g) + dg, 0, 255);
-        int b = std::clamp(static_cast<int>(col.b) + db, 0, 255);
+        int r = std::clamp(int(col.r) + dr, 0, 255);
+        int g = std::clamp(int(col.g) + dg, 0, 255);
+        int b = std::clamp(int(col.b) + db, 0, 255);
 
         return sf::Color(r, g, b);
     }

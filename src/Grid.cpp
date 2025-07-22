@@ -124,8 +124,9 @@ void Grid::tempProcess(int x, int y) {
             grid[y][x].setTemp( temp1*0.8 + temp2*0.2 );
         }
     }
-void Grid::checkReaction(int x, int y, int x2, int y2) {
+void Grid::checkReaction(int x, int y, int x2, int y2, bool overwrite) {
     if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
+    if( !overwrite && !grid[y2][x2].getProcessed() ) return; // overwrite means checking reaction again this frame
     std::string elem1 = grid[y][x].getElem();
     std::string elem2 = grid[y2][x2].getElem();
     if( elem1 == elem2 ) return;
@@ -137,6 +138,7 @@ void Grid::checkReaction(int x, int y, int x2, int y2) {
     auto it2 = elem::reaction[elem2].find( elem1 );
     if( it2 != elem::reaction[elem2].end() ) {
         setPixel(x2, y2, elem::reaction[elem2][elem1] );
+        grid[y2][x2].setProcessed(true);
     }
 }
 
@@ -195,8 +197,8 @@ void Grid::render(int x, int y) {
     col.r += std::min( 255-col.r, 18*addR );
     if( getTemp(x, y) > 1000 ) {
         int addW = ( getTemp(x, y) - 1000 ) / 50;
-        col.g += std::min( 255-col.g, 10*addW );
-        col.b += std::min( 255-col.b, 10*addW );
+        col.g += std::min( 255-col.g, 6*addW );
+        col.b += std::min( 255-col.b, 6*addW );
     }
     image->setPixel(x, y, col + debug_grid[y][x] );
 }

@@ -34,6 +34,11 @@ std::vector<sf::Vector2i> getLinePoints(int x1, int y1, int x2, int y2) {
 }
 
 std::unordered_map<char, std::string> key_to_elem = {
+    {'W', "wood"},
+    {'F', "fuse"},
+    {'m', "metal"},
+    {'D', "diamond"},
+
     {'d', "dirt"},
     {'r', "rock"},
     {'i', "ice"},
@@ -42,16 +47,23 @@ std::unordered_map<char, std::string> key_to_elem = {
     {'g', "gravel"},
 
     {'w', "water"},
-    {'W', "water_source"},
+    //{'W', "water_source"},
     {'o', "oil"},
     {'l', "lava"},
     
+    {'c', "cloud"},
     {'f', "fire"},
-    {'F', "fire_source"},
+    //{'F', "fire_source"},
     {'p', "plasma"},
+    {'k', "spark"},
+    {'O', "oxygen"},
+    {'e', "explosion4"},
 
     {'b', "bug"},
     {'G', "grass_seed"},
+    {'P', "plant"},
+
+    {'n', "nuke"},
 };
 
 InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {
@@ -84,28 +96,6 @@ void InputHandler::process() {
         // exit button
         if (event.type == sf::Event::Closed)
             window->close();
-        // place elem event
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            sf::Vector2i pos = sf::Mouse::getPosition(*window);
-
-            if( last_tick_placed == sf::Vector2i(-1, -1) )
-                brush(pos.x / scale, pos.y / scale);
-            else
-                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale);
-            last_tick_placed = pos/scale;
-            return;
-        }
-        // erase event
-        else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-            sf::Vector2i pos = sf::Mouse::getPosition(*window);
-
-            if( last_tick_placed == sf::Vector2i(-1, -1) )
-                brush(pos.x / scale, pos.y / scale, true);
-            else
-                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale, true);
-            last_tick_placed = pos / scale;
-            return;
-        } else last_tick_placed = sf::Vector2i(-1, -1);
         // key to select element/debug
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F1) {
@@ -133,4 +123,25 @@ void InputHandler::process() {
             }
         }
     }
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            sf::Vector2i pos = sf::Mouse::getPosition(*window);
+
+            if( last_tick_placed == sf::Vector2i(-1, -1) )
+                brush(pos.x / scale, pos.y / scale);
+            else
+                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale);
+            last_tick_placed = pos/scale;
+            return;
+        }
+        // erase event
+        else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+            sf::Vector2i pos = sf::Mouse::getPosition(*window);
+
+            if( last_tick_placed == sf::Vector2i(-1, -1) )
+                brush(pos.x / scale, pos.y / scale, true);
+            else
+                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale, true);
+            last_tick_placed = pos / scale;
+            return;
+        } else last_tick_placed = sf::Vector2i(-1, -1);
 }

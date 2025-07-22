@@ -31,7 +31,7 @@ class Grid {
     void reactionProcess(int x, int y);
     void wetProcess(int x, int y);
     void tempProcess(int x, int y);
-    void checkReaction(int x, int y, int x2, int y2);
+    void checkReaction(int x, int y, int x2, int y2, bool overwrite=false);
     // pixel grid functions 
     bool inBounds(int x, int y);
     bool isEmpty(int x, int y);

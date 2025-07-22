@@ -14,7 +14,8 @@ void tryPlace(Grid &g, int x, int y, std::string element) {
 }
 
 int state::universalProcess(Grid &g, int x, int y) {
-    if( elem::list[g.getElem(x, y)].evaporates && elemutil::randf() < 0.1 ) {
+    std::string element = g.getElem(x, y);
+    if( elem::list[element].evaporates && elemutil::randf() < elem::list[element].evap_chance ) {
         auto temp = elem::evap_to.find( g.getElem(x, y) );
         if( temp != elem::evap_to.end() )
             g.setPixel(x, y, temp->second);
@@ -72,13 +73,28 @@ void state::gasProcess(Grid &g, int x, int y) {
     if( tryMove(g, x, y, x+incr, y) ) return;
     if( tryMove(g, x, y, x-incr, y) ) return;
 }
-void state::emitterProcess(Grid &g, int x, int y) {
+void state::neutralProcess(Grid &g, int x, int y) {
     if( universalProcess(g, x, y) ) return;
+    int hincr = elemutil::randomIncrement();
+    int vincr = elemutil::randomIncrement();
+    if( elemutil::randf() < 0.33 ) {
+        if( tryMove(g, x, y, x+hincr, y) ) return;
+        if( tryMove(g, x, y, x-hincr, y+vincr) ) return;
+    }
+    if( tryMove(g, x, y, x+hincr, y+vincr) ) return;
+    if( tryMove(g, x, y, x, y+vincr) ) return;
+    if( tryMove(g, x, y, x-hincr, y+vincr) ) return;
+    if( tryMove(g, x, y, x+hincr, y-vincr) ) return;
+    if( tryMove(g, x, y, x, y+vincr) ) return;
+    if( tryMove(g, x, y, x-hincr, y-vincr) ) return;
+}
+void state::emitterProcess(Grid &g, int x, int y) {
     std::string to_place = elem::emits[ g.getElem(x, y) ];
     tryPlace(g, x-1, y, to_place);
     tryPlace(g, x+1, y, to_place);
     tryPlace(g, x, y-1, to_place);
     tryPlace(g, x, y+1, to_place);
+    if( universalProcess(g, x, y) ) return; // placed after so it can spawn before evaporating
     return;
 }
 void state::lifeformProcess(Grid &g, int x, int y) {
@@ -91,12 +107,47 @@ void state::lifeformProcess(Grid &g, int x, int y) {
     if( tryMove(g, x, y, x-incr, y) ) return;
     if( tryMove(g, x, y, x-incr, y-1) ) return;
 }
+void state::staticProcess(Grid &g, int x, int y) {
+    universalProcess(g, x, y);
+    return;
+}
+void state::explosionProcess(Grid &g, int x, int y) {
+    std::string s = g.getElem(x, y);
+    int size = int(s[s.length() - 1] - '0');  // size is the radius
+    int radius = size*size;
+    int temp = g.getTemp(x, y);
+    g.setPixel(x, y, "explosion", true); // normalize to explosion for mutual reactions
+
+    for (int i = -radius; i <= radius; ++i) {
+        for (int j = -radius; j <= radius; ++j) {
+            if (i*i + j*j <= radius * radius) {
+                if( g.inBounds(x+i, y+j) ) {
+                    if( g.isEmpty(x+i, y+j) || g.getElem(x+i, y+j) == "fire")
+                        g.setPixel(x + i, y + j, "fire", true);
+                    else {
+                        // lower temperature to half the furthere away it is
+                        float dist = std::sqrt(i * i + j * j);
+                        float normDist = dist / radius / 2;
+                        int localTemp = int(temp * (1. - normDist));
+                        g.checkReaction(x, y, x+i, y+j, true);
+                        g.setTemp(x+i, y+j, localTemp );
+                    }
+                }
+            }
+        }
+    }
+    // Also set the center pixel
+    g.setPixel(x, y, "fire", true);
+}
 
 std::vector<void(*)(Grid&,int,int)> state::stateProcess = {
     &gasProcess,
+    &neutralProcess,
     &liquidProcess,
     &dustProcess,
     &solidProcess,
     &emitterProcess,
     &lifeformProcess,
+    &staticProcess,
+    &explosionProcess,
 };
