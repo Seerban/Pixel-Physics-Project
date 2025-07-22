@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+#include <string>
 #include "States.h"
 
 namespace elem {
@@ -15,6 +16,10 @@ struct element {
     bool burning = false;
     float wet = 0;
     double temperature = 30;
+    int freeze_temp = 0;
+    std::string freeze_to;
+    int melt_temp = 0;
+    std::string melt_to;
     bool colorful = false; // increases color variability
     bool colorless = false; // removes color variability
     bool highlight = false; // has white highlights
@@ -24,8 +29,7 @@ struct element {
     bool flammable = false;
 };
 
-// utility function for easier defining
-element el(state::States elemstate, const char* hex, float density = 1, const char* tags = "");
+element el(state::States elemstate, const char* hex, float density, int temperature, int freezing_point, std::string freeze_to, int melting_point, std::string melt_to, const char* tags);
 
 // Element list
 extern std::unordered_map< std::string, element > list;
@@ -33,15 +37,6 @@ extern std::unordered_map< std::string, element > list;
 // Element reactions
 extern std::unordered_map< std::string, std::unordered_map< std::string, std::string> > reaction;
 extern std::unordered_map< std::string, std::string > emits;
-
-extern std::unordered_map< std::string, std::string > hardmelt;
-extern std::unordered_map< std::string, std::string > melt;
-
 extern std::unordered_map< std::string, std::string > evap_to;
-
 extern std::unordered_map< std::string, std::string > wet_to;
-extern std::unordered_map< std::string, std::string > dry_to;
-
-extern std::unordered_map< std::string, std::string > freeze;
-extern std::unordered_map< std::string, std::string > unfreeze;
 }

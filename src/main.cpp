@@ -2,32 +2,31 @@
 #include "UIHandler.h"
 #include "InputHandler.h"
 
-const int SIZE = 80; //multiple of CHUNK size in grid.h
+const int SIZE = 120; //multiple of CHUNK size in grid.h
 const int SCALE = 6;
-const int FPS = 30;
+const int FPS = 60;
 
 std::string controls = \
 "---------------- CONTROLS ----------------\n \
 F1 - Chunk Debug Mode (Performance Heavy) \n\
 Nums - Brush Size \n\
 ■ Solids ■ \n\
-[q]Dirt \t\
-[w]Rock \t\
-[e]Ice \n\
+[d]Dirt \t\
+[r]Rock \t\
+[i]Ice \n\
 ▲ Dusts ▲ \n\
-[a]Sand \t\
-[s]Gravel \n\
+[s]Sand \t\
+[g]Gravel \n\
 ≈ Liquids ≈ \n\
-[z/Z]Water \t\
-[x]Gasoline \t\
-[c]Lava \n\
+[w/W]Water \t\
+[o]Oil \t\t\
+[l]Lava \n\
 ● Gases ● \n\
 [f/F]Fire \t\
-[g]Plasma \t\
-[h]Steam \n\
+[p]Plasma \n\
 ✧ Life ✧ \n\
-[b]Bug \t\
-[n]Seed \n\
+[b]Bug \t\t\
+[G]Grass Seed \n\
 ¿ Other ? \
 ";
 

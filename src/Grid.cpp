@@ -74,10 +74,6 @@ void Grid::wetProcess(int x, int y) {
         setPixel(x, y, "", true);
         return; 
     }
-    if( tempwet <= 0.05  && elem::dry_to.find(grid[y][x].getElem()) != elem::dry_to.end()) {
-        setPixel(x, y, elem::dry_to.find(grid[y][x].getElem())->second );
-        return;
-    }
     int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
     
     for(int i = 0; i < 8; i+=2) {
@@ -95,44 +91,30 @@ void Grid::wetProcess(int x, int y) {
 void Grid::tempProcess(int x, int y) {
     if( isEmpty(x, y) ) return;
     int temp = grid[y][x].getTemp();
-    if( temp != 30 ) setChunkRegion(x/CHUNK, y/CHUNK);
-    // freezes
-    if( temp < 0 && elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end()) {
-        setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
+    std::string element = grid[y][x].getElem();
+    if( temp > 20 && temp < 40) {
+        setTemp(x, y, 30);
         return;
     }
-    // unfreeze
-    if( temp > 0 && elem::unfreeze.find(grid[y][x].getElem()) != elem::unfreeze.end()) {
-        setPixel(x, y, elem::unfreeze.find(grid[y][x].getElem())->second );
+    setChunkRegion(x/CHUNK, y/CHUNK);
+    
+    if( temp <= elem::list[element].freeze_temp ) {
+        std::string freeze = elem::list[element].freeze_to;
+        setPixel(x, y, freeze);
+        if( freeze == "" ) setTemp(x, y, 30);
         return;
     }
-    //if( temp > 100 && grid[y][x].getWet() > 0 ) grid[y][x].setWet(0);
-    if( temp > 100 ) setWet(x, y, 0);
-    // melt
-    if( temp > 200  && elem::melt.find(grid[y][x].getElem()) != elem::melt.end() ) {
-        if( elem::list[ grid[y][x].getElem() ].flammable )
-        setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second , true);
-        else setPixel(x, y, elem::melt.find(grid[y][x].getElem())->second );
-        if( isEmpty(x, y) ) setTemp(x, y, 30);
-        return;
-    }
-    // stop burning
-    if( temp < 600 && elem::list[ grid[y][x].getElem() ].burning ) {
-        if( elem::freeze.find(grid[y][x].getElem()) != elem::freeze.end() ) {
-            setPixel(x, y, elem::freeze.find(grid[y][x].getElem())->second );
-        }
-        else setPixel(x, y, "", true);   
-        return;
-    }
-    // high melt point
-    if( temp > 1000 && elem::hardmelt.find( grid[y][x].getElem() ) != elem::hardmelt.end() ) {
-        setPixel(x, y, elem::hardmelt.find(grid[y][x].getElem())->second );
+    if( temp >= elem::list[element].melt_temp ) {
+        std::string melt = elem::list[element].melt_to;
+        setPixel(x, y, melt);
+        if( elem::list[element].flammable ) setTemp(x, y, elem::list[melt].temperature );
+        if( melt == "" ) setTemp(x, y, 30);
         return;
     }
     int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
     for(int i = 0; i < 8; i+=2) {
         if( !inBounds(y+incrs[i], x+incrs[i+1]) || isEmpty(x+incrs[i+1], y+incrs[i]) ) {
-            setTemp( x, y, elemutil::intStep( getTemp(x, y), 30, 3) );
+            setTemp( x, y, elemutil::intStep( getTemp(x, y), 30, 5) );
             continue;
         }
             
@@ -141,7 +123,6 @@ void Grid::tempProcess(int x, int y) {
             grid[y+incrs[i]][x+incrs[i+1]].setTemp( temp1*0.2 + temp2*0.8 );
             grid[y][x].setTemp( temp1*0.8 + temp2*0.2 );
         }
-        if( getTemp(x, y) > 25 && getTemp(x, y) < 35 ) setTemp(x, y, 30);
     }
 void Grid::checkReaction(int x, int y, int x2, int y2) {
     if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
@@ -195,15 +176,11 @@ void Grid::setChunkRegion(int x, int y) {
     setChunk(x-1, y, true);
     setChunk(x+1, y, true);
     setChunk(x, y-1, true);
+    setChunk(x+1, y-1, true);
+    setChunk(x-1, y-1, true);
     setChunk(x, y+1, true);
-    if( grid[y][x].getState() == state::GAS ) {
-        setChunk(x+1, y-1, true);
-        setChunk(x-1, y-1, true);
-    }
-    else {
-        setChunk(x+1, y+1, true);
-        setChunk(x-1, y+1, true);
-    }
+    setChunk(x+1, y+1, true);
+    setChunk(x-1, y+1, true);
 }
 void Grid::clearDebug() {
     for(int i = 0; i < size; ++i)
@@ -214,8 +191,8 @@ void Grid::clearDebug() {
 }
 void Grid::render(int x, int y) {
     sf::Color col = grid[y][x].getCol();
-    int addR = getTemp(x, y) / 50;
-    col.r += std::min( 255-col.r, 12*addR );
+    int addR = getTemp(x, y) / 100;
+    col.r += std::min( 255-col.r, 18*addR );
     if( getTemp(x, y) > 1000 ) {
         int addW = ( getTemp(x, y) - 1000 ) / 50;
         col.g += std::min( 255-col.g, 10*addW );

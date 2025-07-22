@@ -1,26 +1,57 @@
 #include "InputHandler.h"
 
+std::vector<sf::Vector2i> getLinePoints(int x1, int y1, int x2, int y2) {
+    std::vector<sf::Vector2i> points;
+
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+
+    int sx = x1 < x2 ? 1 : -1;
+    int sy = y1 < y2 ? 1 : -1;
+
+    int err = dx - dy;
+
+    while (true) {
+        points.emplace_back(x1, y1);
+
+        if (x1 == x2 && y1 == y2)
+            break;
+
+        int e2 = 2 * err;
+
+        if (e2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
+
+        if (e2 < dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+
+    return points;
+}
+
 std::unordered_map<char, std::string> key_to_elem = {
-    {'q', "dirt"},
-    {'w', "rock"},
-    {'e', "ice"},
-    {'r', "mud"},
+    {'d', "dirt"},
+    {'r', "rock"},
+    {'i', "ice"},
 
-    {'a', "sand"},
-    {'s', "gravel"},
+    {'s', "sand"},
+    {'g', "gravel"},
 
-    {'z', "water"},
-    {'Z', "water_source"},
-    {'x', "gasoline"},
-    {'c', "lava"},
+    {'w', "water"},
+    {'W', "water_source"},
+    {'o', "oil"},
+    {'l', "lava"},
     
     {'f', "fire"},
     {'F', "fire_source"},
-    {'g', "plasma"},
-    {'h', "steam"},
+    {'p', "plasma"},
 
     {'b', "bug"},
-    {'n', "seed"},
+    {'G', "grass_seed"},
 };
 
 InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {
@@ -39,6 +70,14 @@ void InputHandler::brush(int x, int y, bool erase) {
                 else g->setPixel(x+j, y+i, "", true);
 }
 
+void InputHandler::brush_line(int x1, int y1, int x2, int y2, bool erase) {
+    std::vector<sf::Vector2i> line = getLinePoints(x1, y1, x2, y2);
+    for (const auto& p : line) {
+        brush(p.x, p.y, erase);
+    }
+}
+
+
 void InputHandler::process() {
     sf::Event event;
     while (window->pollEvent(event)) {
@@ -48,15 +87,25 @@ void InputHandler::process() {
         // place elem event
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             sf::Vector2i pos = sf::Mouse::getPosition(*window);
-            brush(pos.x / scale, pos.y / scale);
+
+            if( last_tick_placed == sf::Vector2i(-1, -1) )
+                brush(pos.x / scale, pos.y / scale);
+            else
+                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale);
+            last_tick_placed = pos/scale;
             return;
         }
         // erase event
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+        else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
             sf::Vector2i pos = sf::Mouse::getPosition(*window);
-            brush(pos.x / scale, pos.y / scale, true);
+
+            if( last_tick_placed == sf::Vector2i(-1, -1) )
+                brush(pos.x / scale, pos.y / scale, true);
+            else
+                brush_line(last_tick_placed.x, last_tick_placed.y, pos.x / scale, pos.y / scale, true);
+            last_tick_placed = pos / scale;
             return;
-        }
+        } else last_tick_placed = sf::Vector2i(-1, -1);
         // key to select element/debug
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F1) {
