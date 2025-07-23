@@ -6,7 +6,7 @@
 class UIHandler {
     int size, scale, font_size;
     Grid *g; // to get data from
-    sf::RenderWindow *window; // to render to screen
+    sf::RenderWindow *window; // to render to
     sf::Font font;
     sf::Text selection;
     sf::Text temperature;

@@ -52,7 +52,6 @@ void Grid::processPixel(int x, int y) {
     wetProcess(x, y);
     tempProcess(x, y);
     render(x, y);
-    // movement utility functions defined in grid.cpp
     (state::stateProcess[ grid[y][x].getState() ])(*this, x, y);
 }
 void Grid::reactionProcess(int x, int y) {

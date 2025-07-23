@@ -14,11 +14,9 @@ namespace elemutil {
     }
     int countChar(const char* s, char c) {
         int total = 0;
-        while( *s ) {
+        for(; *s; ++s )
             if( *s == c )
                 total++;
-            ++s;
-            }
         return total;
     }
 }

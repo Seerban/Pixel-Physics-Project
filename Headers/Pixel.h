@@ -12,7 +12,6 @@ class Pixel {
     float wet = 0; // humidity
     double temp = 30; // assumed room temperature
 public:
-    // CONSTRUCTORS
     Pixel() : Pixel("") {}
     Pixel(std::string s) : elem(s), col( randomize_col(elem::list[s].col) ), state(elem::list[s].elemstate), processed(false) {}
     
@@ -28,7 +27,6 @@ public:
         return *this;
     }
     
-    // GETTERS/SETTERS
     std::string getElem() { return this->elem; }
     void setElem(std::string s) { this->elem = s; }
     sf::Color getCol() { return this->col; }

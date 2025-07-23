@@ -40,7 +40,7 @@ std::unordered_map< std::string, element > list {
     {"diamond",         el(state::STATIC,   "99B9F5", 3,    30,     -10000,     "",         10000,       "",       "h")},
     {"fuse",            el(state::STATIC,   "AA7E82", 3,    30,     -10000,     "",         100,      "fire_source","CF")},
     {"metal",           el(state::STATIC,   "353535", 3,    30,     -10000,     "",         1000,    "molten_metal","C")},
-    {"plant",           el(state::STATIC,   "359555", 3,    30,     -10000,     "",         150,      "fire_source","c")},
+    {"plant",           el(state::STATIC,   "359555", 3,    30,     -10000,     "",         150,      "fire_source","")},
     {"rusted_metal",    el(state::STATIC,   "452E22", 3,    30,     -10000,     "",         1000,    "molten_metal","C")},
     {"wood",            el(state::STATIC,   "855E42", 3,    30,     -10000,     "",         100,      "fire_source","")},
 
@@ -55,8 +55,8 @@ std::unordered_map< std::string, element > list {
     {"grass",           el(state::SOLID,    "05AA25", 2,    30,     -10000,     "",         100,        "dirt",     "")},
 
     
-    {"burning_oil",     el(state::LIQUID,   "FF2222", 1,    1000,   600,        "",         10000,      "",         "")},
-    {"molten_glass",    el(state::LIQUID,   "DDDDFF", 2,    999,    1000,       "glass",     10000,      "",         "")},
+    {"burning_oil",     el(state::LIQUID,   "FF2222", 1,    1000,   600,        "",         10000,      "",         "e")},
+    {"molten_glass",    el(state::LIQUID,   "DDDDFF", 2,    999,    1000,       "glass",     10000,     "",         "")},
     {"molten_metal",    el(state::LIQUID,   "653535", 2,    1000,   999,        "metal",    10000,      "",         "")},
     {"oil",             el(state::LIQUID,   "151055", 1,    30,     -10000,     "",         200,      "burning_oil","cF")},
     {"lava",            el(state::LIQUID,   "DD3505", 2,    1500,   600,        "obsidian", 10000,      "",         "")},
@@ -83,7 +83,7 @@ std::unordered_map< std::string, element > list {
 
     {"explosion",       el(state::EXPLOSION,"FFFFFF", 0.5,  2000,   -10000,     "",         10000,      "",         "")},
     {"explosion4",      el(state::EXPLOSION,"FFFFFF", 0.5,  2000,   -10000,     "",         10000,      "",         "")},
-    {"explosion7",      el(state::EXPLOSION,"FFFFFF", 0.5,  5000,   -10000,     "",         10000,      "",         "")},
+    {"explosion7",      el(state::EXPLOSION,"FFFFFF", 0.5,  3000,   -10000,     "",         10000,      "",         "")},
 };
 // Element Reactions
 std::unordered_map< std::string, std::unordered_map< std::string, std::string> > reaction {
@@ -94,6 +94,7 @@ std::unordered_map< std::string, std::unordered_map< std::string, std::string> >
     {"metal",   { {"water", "rusted_metal"} }},
     {"rock",    { {"explosion", "gravel"} }},
     {"water",   { {"plant", "plant"} }},
+    {"plant",   { {"bug", "bug"} }},
 };
 // Element turns air to elem
 std::unordered_map< std::string, std::string > emits {

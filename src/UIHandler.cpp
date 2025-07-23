@@ -3,7 +3,7 @@
 UIHandler::UIHandler(int size, int scale, sf::RenderWindow &window, Grid &g) {
     this->size = size;
     this->scale = scale;
-    this->font_size = 24;
+    this->font_size = 18;
     this->g = &g;
     this->window = &window;
     font.loadFromFile( "Assets/Roboto-Bold.ttf" );
@@ -18,7 +18,7 @@ UIHandler::UIHandler(int size, int scale, sf::RenderWindow &window, Grid &g) {
 void UIHandler::setTextProp(sf::Text &t) {
     t.setStyle(sf::Text::Bold);    
     t.setFont(font);
-    t.setCharacterSize(12);
+    t.setCharacterSize(font_size);
     t.setFillColor( sf::Color::White );
     t.setString( "Hello World" );
     t.setPosition( sf::Vector2f(0, 0) );
@@ -48,5 +48,5 @@ int UIHandler::fps() {
     std::chrono::duration<double> elapsed = now - last_time;
     last_time = now;
     float fps = 1.0 / elapsed.count();
-    return static_cast<int>(fps + 0.5); // rounded to nearest int
+    return int(fps + 0.5);
 }
