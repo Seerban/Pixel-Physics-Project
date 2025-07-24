@@ -5,15 +5,15 @@
 #include "Element.h"
 
 class Pixel {
-    std::string elem;
+    elem::Elements elem;
     sf::Color col;
     state::States state;
     bool processed;
     float wet = 0; // humidity
     double temp = 30; // assumed room temperature
 public:
-    Pixel() : Pixel("") {}
-    Pixel(std::string s) : elem(s), col( randomize_col(elem::list[s].col) ), state(elem::list[s].elemstate), processed(false) {}
+    Pixel() : Pixel(elem::VOID) {}
+    Pixel(elem::Elements s) : elem(s), col( randomize_col(elem::list[s].col) ), state(elem::list[s].elemstate), processed(false) {}
     
     // OPERATORS
     Pixel& operator=(const Pixel& p) {
@@ -27,8 +27,8 @@ public:
         return *this;
     }
     
-    std::string getElem() { return this->elem; }
-    void setElem(std::string s) { this->elem = s; }
+    elem::Elements getElem() { return this->elem; }
+    void setElem(elem::Elements s) { this->elem = s; }
     sf::Color getCol() { return this->col; }
     void setCol(sf::Color c) { this->col = c; }
     state::States getState() { return this->state; }

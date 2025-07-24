@@ -33,37 +33,37 @@ std::vector<sf::Vector2i> getLinePoints(int x1, int y1, int x2, int y2) {
     return points;
 }
 
-std::unordered_map<char, std::string> key_to_elem = {
-    {'W', "wood"},
-    {'F', "fuse"},
-    {'m', "metal"},
-    {'D', "diamond"},
+std::unordered_map<char, elem::Elements> key_to_elem = {
+    {'W', elem::WOOD},
+    {'F', elem::FUSE},
+    {'m', elem::METAL},
+    {'D', elem::DIAMOND},
 
-    {'d', "dirt"},
-    {'r', "rock"},
-    {'i', "ice"},
+    {'d', elem::DIRT},
+    {'r', elem::ROCK},
+    {'i', elem::ICE},
 
-    {'s', "sand"},
-    {'g', "gravel"},
+    {'s', elem::SAND},
+    {'g', elem::GRAVEL},
 
-    {'w', "water"},
+    {'w', elem::WATER},
     //{'W', "water_source"},
-    {'o', "oil"},
-    {'l', "lava"},
+    {'o', elem::OIL},
+    {'l', elem::LAVA},
     
-    {'c', "cloud"},
-    {'f', "fire"},
+    {'c', elem::CLOUD},
+    {'f', elem::FIRE},
     //{'F', "fire_source"},
-    {'p', "plasma"},
-    {'k', "spark"},
-    {'O', "oxygen"},
-    {'e', "explosion4"},
+    {'p', elem::PLASMA},
+    {'k', elem::SPARK},
+    {'O', elem::OXYGEN},
+    {'e', elem::EXPLOSION4},
 
-    {'b', "bug"},
-    {'G', "grass_seed"},
-    {'P', "plant"},
+    {'b', elem::BUG},
+    {'G', elem::GRASS_SEED},
+    {'P', elem::PLANT},
 
-    {'n', "nuke"},
+    {'n', elem::NUKE},
 };
 
 InputHandler::InputHandler(int size, int scale, Grid& g, sf::RenderWindow &window) {
@@ -79,7 +79,7 @@ void InputHandler::brush(int x, int y, bool erase) {
         for(int j = -brush_size; j <= brush_size; ++j)
             if( i*i+j*j<0.75*brush_size*brush_size && g->inBounds(x+j, y+i))
                 if( !erase ) { if(g->isEmpty(x+j, y+i) ) g->setPixel(x+j, y+i, selected_elem, true); }
-                else g->setPixel(x+j, y+i, "", true);
+                else g->setPixel(x+j, y+i, elem::VOID, true);
 }
 
 void InputHandler::brush_line(int x1, int y1, int x2, int y2, bool erase) {

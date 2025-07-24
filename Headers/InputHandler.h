@@ -1,12 +1,9 @@
 #include "Grid.h"
 #include <unordered_map>
-#include <string>
-
-//std::unordered_map<char, std::string> key_to_elem;
 
 class InputHandler {
     int size, scale, brush_size;
-    std::string selected_elem = "dirt";
+    elem::Elements selected_elem = elem::DIRT;
     sf::Vector2i last_tick_placed = sf::Vector2i(-1, -1);
 
     sf::RenderWindow *window;

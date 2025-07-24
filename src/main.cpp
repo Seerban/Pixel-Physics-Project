@@ -43,6 +43,7 @@ Nums - Brush Size \n\
 
 int main() {
     srand(time(0));
+    elem::init_list();
     sf::RenderWindow window;
     sf::Image image; // manipulated inside grid
     sf::Texture texture;

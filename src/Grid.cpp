@@ -69,8 +69,8 @@ void Grid::wetProcess(int x, int y) {
         return;
     }
     // dry
-    if( tempwet <= 0.75 && grid[y][x].getElem() == "water" ) {
-        setPixel(x, y, "", true);
+    if( tempwet <= 0.75 && grid[y][x].getElem() == elem::WATER ) {
+        setPixel(x, y, elem::VOID, true);
         return; 
     }
     int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
@@ -90,7 +90,7 @@ void Grid::wetProcess(int x, int y) {
 void Grid::tempProcess(int x, int y) {
     if( isEmpty(x, y) ) return;
     int temp = grid[y][x].getTemp();
-    std::string element = grid[y][x].getElem();
+    elem::Elements element = grid[y][x].getElem();
     if( temp > 20 && temp < 40) {
         setTemp(x, y, 30);
         return;
@@ -98,16 +98,16 @@ void Grid::tempProcess(int x, int y) {
     setChunkRegion(x/CHUNK, y/CHUNK);
     
     if( temp <= elem::list[element].freeze_temp ) {
-        std::string freeze = elem::list[element].freeze_to;
+        elem::Elements freeze = elem::list[element].freeze_to;
         setPixel(x, y, freeze);
-        if( freeze == "" ) setTemp(x, y, 30);
+        if( freeze == elem::VOID ) setTemp(x, y, 30);
         return;
     }
     if( temp >= elem::list[element].melt_temp ) {
-        std::string melt = elem::list[element].melt_to;
+        elem::Elements melt = elem::list[element].melt_to;
         setPixel(x, y, melt);
         if( elem::list[element].flammable ) setTemp(x, y, elem::list[melt].temperature );
-        if( melt == "" ) setTemp(x, y, 30);
+        if( melt == elem::VOID ) setTemp(x, y, 30);
         return;
     }
     int incrs[] = {1, 0, -1, 0, 0, 1, 0, -1};
@@ -126,8 +126,8 @@ void Grid::tempProcess(int x, int y) {
 void Grid::checkReaction(int x, int y, int x2, int y2, bool overwrite) {
     if( !inBounds(x2, y2) || !inBounds(x, y) ) return;
     if( !overwrite && !grid[y2][x2].getProcessed() ) return; // overwrite means checking reaction again this frame
-    std::string elem1 = grid[y][x].getElem();
-    std::string elem2 = grid[y2][x2].getElem();
+    elem::Elements elem1 = grid[y][x].getElem();
+    elem::Elements elem2 = grid[y2][x2].getElem();
     if( elem1 == elem2 ) return;
     auto it = elem::reaction[elem1].find( elem2 );
     
@@ -145,9 +145,9 @@ bool Grid::inBounds(int x, int y) {
     return !(x<0 || y<0 || x>=size || y>=size);
 }
 bool Grid::isEmpty(int x, int y) {
-    return grid[y][x].getElem() == ""; // empty element is ""
+    return grid[y][x].getElem() == elem::VOID; // empty element is ""
 }
-std::string Grid::getElem(int x, int y) {
+elem::Elements Grid::getElem(int x, int y) {
     return grid[y][x].getElem();
 }
 float Grid::getDensity(int x, int y) {
@@ -202,7 +202,7 @@ void Grid::render(int x, int y) {
     image->setPixel(x, y, col + debug_grid[y][x] );
 }
 
-void Grid::setPixel(int x, int y, std::string s, bool override) { // not to be confused with window->setPixel
+void Grid::setPixel(int x, int y, elem::Elements s, bool override) { // not to be confused with window->setPixel
     setChunkRegion(x/CHUNK, y/CHUNK);
     int oldtemp = getTemp(x, y);
     float oldwet = elem::list[s].wet;

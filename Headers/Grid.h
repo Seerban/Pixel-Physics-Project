@@ -35,7 +35,7 @@ class Grid {
     // pixel grid functions 
     bool inBounds(int x, int y);
     bool isEmpty(int x, int y);
-    std::string getElem(int x, int y);
+    elem::Elements getElem(int x, int y);
     float getDensity(int x, int y);
     // manages active chunks
     void setDebug(int x, int y, sf::Color c = sf::Color(0, 55, 0));
@@ -44,7 +44,7 @@ class Grid {
     void clearDebug();
     void render(int x, int y);
     // pixel manipulation
-    void setPixel(int x, int y, std::string s, bool override = false);
+    void setPixel(int x, int y, elem::Elements s, bool override = false);
     void switchPixel(int x, int y, int x2, int y2);
     // used getters/setters
     double getTemp(int x, int y);

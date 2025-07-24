@@ -27,7 +27,7 @@ void UIHandler::setTextProp(sf::Text &t) {
 void UIHandler::draw() {
     sf::Vector2i mousepos = sf::Vector2i(sf::Mouse::getPosition(*window).x / scale, sf::Mouse::getPosition(*window).y / scale);
     if( g->inBounds( mousepos.x, mousepos.y ) ) {
-        selection.setString( g->getElem(mousepos.x, mousepos.y) );
+        selection.setString( elem::list[g->getElem(mousepos.x, mousepos.y)].name );
         sf::Color col = g->getCol(mousepos.x, mousepos.y);
         col.r = (col.r + 255) / 2;
         col.g = (col.g + 255) / 2;
